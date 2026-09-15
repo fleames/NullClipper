@@ -1,0 +1,166 @@
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+html.copy-only,
+html.copy-only body {
+  background: #111827;
+}
+
+html.copy-only .nc-root {
+  display: none;
+}
+
+.nc-clip-fallback {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nc-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  color: #f3f4f6;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.nc-freeze {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.nc-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.nc-selection {
+  position: absolute;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  display: none;
+}
+
+.nc-badge {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  background: rgba(11, 15, 20, 0.95);
+  border: 1px solid rgba(30, 40, 52, 0.2);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-family: "Cascadia Mono", Consolas, ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f3f4f6;
+  white-space: nowrap;
+}
+
+.nc-toolbar {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 6px;
+  background: rgba(11, 15, 20, 0.95);
+  border: 1px solid rgba(30, 40, 52, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  cursor: default;
+  z-index: 2;
+}
+
+.nc-kinds {
+  display: flex;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 3px;
+  margin: 0 4px 0 2px;
+}
+
+.nc-kind {
+  min-width: 52px;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #c4cdd8;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nc-kind:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.nc-kind.on {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.nc-kind.on:hover {
+  background: #4c8dff;
+}
+
+.nc-split {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.13);
+  margin: 0 6px;
+}
+
+.nc-tool {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #f3f6fa;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.nc-tool:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.nc-tool.on {
+  background: #3b82f6;
+}
+
+.nc-tool.close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fecaca;
+}
+
+.nc-tool svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}

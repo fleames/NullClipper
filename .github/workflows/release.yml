@@ -48,11 +48,22 @@ jobs:
           -p:DebugSymbols=false
           -o dist/win-x64
 
-      - name: Package zip
+      - name: Package Windows zip
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
           Compress-Archive -Path dist/win-x64/* -DestinationPath dist/NullClipper-win-x64.zip -Force
+
+      - name: Package extension zip
+        shell: pwsh
+        run: powershell -File extension/pack.ps1
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build Windows installer
+        shell: pwsh
+        run: powershell -File installer/build.ps1 -Version ${{ steps.version.outputs.version }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -61,13 +72,23 @@ jobs:
           name: NullClipper ${{ steps.version.outputs.tag }}
           generate_release_notes: true
           files: |
+            dist/NullClipper-Setup.exe
             dist/NullClipper-win-x64.zip
+            dist/NullClipper-extension.zip
           body: |
             ## NullClipper ${{ steps.version.outputs.tag }}
 
-            Download **NullClipper-win-x64.zip**, extract it, and run `NullClipper.exe`.
+            ### Windows
+            - **One click:** download **NullClipper-Setup.exe**, double-click, Next, Finish.
+            - **Portable:** **NullClipper-win-x64.zip** — extract and run `NullClipper.exe`.
 
             Requires the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) for Windows x64.
+
+            ### Browser extension (Chrome / Edge / Opera)
+            Download **NullClipper-extension.zip**, unzip, then Load unpacked in Developer mode.
+            Store listings (true 1-click) are not live yet.
+
+            Opera: sideload still needs Developer mode; the extension does not inject into pages, so google.com captures work.
 
             ### What's inside
             - Tray snipping tool for Windows
@@ -76,3 +97,4 @@ jobs:
             - Premium toast with a thumbnail after each capture
             - Settings minimizes to the tray (no title-bar close)
             - Optional NullImage encrypted share links (1 hour to 7 days)
+            - Tab snip / GIF extension (no content-script injection)

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>NullClipper settings</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        background: #0b0f14;
+        font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      }
+      .stage {
+        width: 1280px;
+        height: 800px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(ellipse at 50% 0%, #1e3a5f 0%, transparent 50%),
+          #0b0f14;
+      }
+      .frame {
+        width: 400px;
+        height: 680px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #1e2834;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+        background: #0b0f14;
+      }
+      iframe {
+        border: 0;
+        width: 400px;
+        height: 680px;
+        display: block;
+        background: #0b0f14;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="frame">
+        <iframe src="settings-inner.html?v=3" title="NullClipper settings"></iframe>
+      </div>
+    </div>
+  </body>
+</html>

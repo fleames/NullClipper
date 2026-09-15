@@ -1,0 +1,91 @@
+html,
+body {
+  margin: 0;
+  background: transparent;
+  color: #f3f4f6;
+  font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.toast {
+  display: flex;
+  align-items: stretch;
+  min-width: 292px;
+  max-width: 420px;
+  margin: 12px;
+  padding: 13px 14px;
+  border-radius: 16px;
+  border: 1px solid #1e2834;
+  background: linear-gradient(180deg, #1a222c 0%, #12181f 16%, #0b0f14 100%);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.48);
+}
+
+.accent {
+  width: 3px;
+  border-radius: 2px;
+  background: #3b82f6;
+  margin: 3px 12px 3px 0;
+  flex: 0 0 auto;
+}
+
+.preview {
+  position: relative;
+  width: 72px;
+  height: 52px;
+  border-radius: 11px;
+  overflow: hidden;
+  background: #0a0f16;
+  border: 1px solid #1e2834;
+  margin-right: 12px;
+  flex: 0 0 auto;
+}
+
+.preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gif-badge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  background: #e33b82f6;
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 1px 5px;
+  display: none;
+}
+
+.gif-badge.on {
+  display: block;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #9ca3af;
+  max-width: 260px;
+  line-height: 1.35;
+}
+
+.hidden {
+  display: none !important;
+}

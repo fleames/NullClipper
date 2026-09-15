@@ -20,3 +20,7 @@ jobs:
 
       - name: Build
         run: dotnet build Clipper.csproj -c Release --nologo
+
+      - name: Pack extension zip
+        shell: pwsh
+        run: powershell -File extension/pack.ps1

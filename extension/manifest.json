@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "NullClipper",
+  "version": "1.0.0",
+  "description": "Snip or record a short GIF of the current tab. Copy a PNG/GIF, or an encrypted NullImage link. Works in Chrome, Edge, and Opera.",
+  "homepage_url": "https://github.com/fleames/NullClipper",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "NullClipper",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab",
+    "clipboardWrite",
+    "commands",
+    "offscreen",
+    "storage",
+    "tabs"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "commands": {
+    "start-capture": {
+      "suggested_key": {
+        "default": "Alt+Shift+X",
+        "mac": "Alt+Shift+X"
+      },
+      "description": "Capture the current tab (snip or GIF)"
+    }
+  }
+}

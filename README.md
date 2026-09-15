@@ -17,8 +17,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/fleames/NullClipper/releases/latest"><strong>Download NullClipper-win-x64.zip</strong></a>
+  <a href="https://github.com/fleames/NullClipper/releases/latest"><strong>Download NullClipper-Setup.exe</strong></a>
+  · or <a href="https://github.com/fleames/NullClipper/releases/latest">NullClipper-win-x64.zip</a>
   · Windows 10/11 x64 · requires <a href="https://dotnet.microsoft.com/download/dotnet/8.0">.NET 8 Desktop Runtime</a>
+</p>
+<p align="center">
+  <a href="docs/install.md"><img src="https://img.shields.io/badge/Chrome-Coming_soon-9ca3af?style=flat-square&logo=googlechrome&logoColor=white" alt="Chrome Web Store coming soon"></a>
+  <a href="docs/install.md"><img src="https://img.shields.io/badge/Edge-Coming_soon-9ca3af?style=flat-square&logo=microsoftedge&logoColor=white" alt="Edge Add-ons coming soon"></a>
+  <a href="docs/install.md"><img src="https://img.shields.io/badge/Opera-Coming_soon-9ca3af?style=flat-square&logo=opera&logoColor=white" alt="Opera add-ons coming soon"></a>
 </p>
 
 ---
@@ -55,11 +61,28 @@ If you want to send the snip instead of pasting it, turn on **NullImage**. The u
 
 ## Install
 
+Full steps: [docs/install.md](docs/install.md).
+
+### Windows
+
 1. Install the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) for Windows x64 if you do not already have it.
 2. Open the [latest GitHub Release](https://github.com/fleames/NullClipper/releases/latest).
-3. Download **`NullClipper-win-x64.zip`**, extract it, and run **`NullClipper.exe`**.
+3. **One click:** download **`NullClipper-Setup.exe`**, double-click, Next, Finish.
+4. **Or portable:** download **`NullClipper-win-x64.zip`**, extract it, and run **`NullClipper.exe`**.
 
-The exe is a tray app. It will not keep a window open. Look for the scissors-and-link icon near the clock, or the “NullClipper is ready” balloon.
+The app lives in the tray. Look for the scissors-and-link icon near the clock, or the “NullClipper is ready” balloon.
+
+### Browser extension (Chrome / Edge / Opera)
+
+Store listings are **coming soon** — Chromium will not 1-click-install a GitHub zip. Listing kit: [`store/`](store/) ([how to publish](store/PUBLISH.md)). Until then:
+
+1. Download **`NullClipper-extension.zip`** from the [latest Release](https://github.com/fleames/NullClipper/releases/latest).
+2. Unzip it to a folder you will keep.
+3. Open `chrome://extensions` (Edge: `edge://extensions`, Opera: `opera://extensions`), turn on **Developer mode**, **Load unpacked**, select that folder.
+
+Opera’s real 1-click path is the Opera add-ons store once the listing is live. Sideload needs Developer mode. The extension does **not** inject into web pages, so Opera can still snip google.com.
+
+Details: [`extension/README.md`](extension/README.md).
 
 ## Usage
 
@@ -95,6 +118,12 @@ If upload fails, NullClipper copies the image instead and tells you.
 
 No API key. No account. Passwords you type in Settings are stored only in `%AppData%\Clipper\settings.json` on your PC — that file is not part of this repo.
 
+## Browser extension
+
+A Chromium extension lives in [`extension/`](extension/) for Chrome, Edge, and Opera. It matches the desktop snip / GIF / NullImage flow but only captures the **current tab**. Crop UI is an extension window (no content-script injection).
+
+Install from the zip on GitHub Releases, or load the `extension/` folder unpacked. After the Chrome / Edge / Opera stores are approved, those badges above become the 1-click path.
+
 ## Build from source
 
 Requires **.NET 8 SDK** on Windows.
@@ -111,9 +140,21 @@ dotnet publish Clipper.csproj -c Release -r win-x64 --self-contained false `
   -o dist/win-x64
 ```
 
-The output is a small folder (`NullClipper.exe` plus its DLLs). Zip that folder to match the GitHub Release asset. The published app needs the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0), not a bundled copy of .NET.
+The output is a small folder (`NullClipper.exe` plus its DLLs). Zip that folder to match the GitHub Release portable asset. The published app needs the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0), not a bundled copy of .NET.
 
-CI builds every push to `main`. Push a tag `v*` (for example `v1.1.0`) to cut a new GitHub Release with `NullClipper-win-x64.zip`.
+```powershell
+powershell -File extension/pack.ps1
+```
+
+writes `dist/NullClipper-extension.zip`. If Inno Setup 6 is installed:
+
+```powershell
+powershell -File installer/build.ps1
+```
+
+writes `dist/NullClipper-Setup.exe`.
+
+CI builds every push to `main`. Push a tag `v*` (for example `v1.1.0`) to cut a new GitHub Release with `NullClipper-Setup.exe`, `NullClipper-win-x64.zip`, and `NullClipper-extension.zip`.
 
 ## License
 
