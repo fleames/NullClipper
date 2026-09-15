@@ -70,7 +70,8 @@ Sideload on Opera still wants **Developer mode** and can hit **ExtensionsSetting
 1. Open **https://addons.opera.com/developer/**
 2. Sign in with the Opera account you want as publisher.
 3. New extension → upload `dist/NullClipper-extension.zip`.
-4. Listing: same name, English, Productivity-style category Opera offers, screenshots, privacy URL.
+4. Listing: same name, English, Productivity-style category Opera offers, screenshots, privacy URL.  
+   **Media tab icon:** upload `store/screenshots/icon64.png` (exactly **64×64**, 24-bit PNG, no alpha). Opera rejects 48×48 and other sizes.
 5. Submit.
 
 **Review time:** often a few days.
