@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/fleames/NullClipper/releases/latest"><strong>Download NullClipper.exe</strong></a>
-  · Windows 10/11 x64 · no .NET install required
+  <a href="https://github.com/fleames/NullClipper/releases/latest"><strong>Download NullClipper-win-x64.zip</strong></a>
+  · Windows 10/11 x64 · requires <a href="https://dotnet.microsoft.com/download/dotnet/8.0">.NET 8 Desktop Runtime</a>
 </p>
 
 ---
@@ -54,9 +54,9 @@ If you want to send the snip instead of pasting it, turn on **NullImage**. The u
 
 ## Install
 
-1. Open the [latest GitHub Release](https://github.com/fleames/NullClipper/releases/latest).
-2. Download **`NullClipper.exe`** (self-contained win-x64) and run it.
-3. Or grab **`NullClipper-win-x64.zip`** if you prefer a folder.
+1. Install the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) for Windows x64 if you do not already have it.
+2. Open the [latest GitHub Release](https://github.com/fleames/NullClipper/releases/latest).
+3. Download **`NullClipper-win-x64.zip`**, extract it, and run **`NullClipper.exe`**.
 
 The exe is a tray app. It will not keep a window open. Look for the scissors-and-link icon near the clock, or the “NullClipper is ready” balloon.
 
@@ -101,17 +101,16 @@ dotnet build Clipper.csproj -c Release
 dotnet run --project Clipper.csproj -c Release
 ```
 
-Self-contained publish (what the Release workflow ships):
+Framework-dependent publish (what the Release workflow ships):
 
 ```powershell
-dotnet publish Clipper.csproj -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true `
-  -p:EnableCompressionInSingleFile=true `
+dotnet publish Clipper.csproj -c Release -r win-x64 --self-contained false `
   -o dist/win-x64
 ```
 
-CI builds every push to `main`. Push a tag `v*` (for example `v1.0.1`) to cut a new GitHub Release with `NullClipper.exe` and `NullClipper-win-x64.zip`.
+The output is a small folder (`NullClipper.exe` plus its DLLs). Zip that folder to match the GitHub Release asset. The published app needs the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0), not a bundled copy of .NET.
+
+CI builds every push to `main`. Push a tag `v*` (for example `v1.0.1`) to cut a new GitHub Release with `NullClipper-win-x64.zip`.
 
 ## License
 
