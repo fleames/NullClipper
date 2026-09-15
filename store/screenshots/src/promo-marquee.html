@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>NullClipper marquee</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1400px;
+        height: 560px;
+        overflow: hidden;
+        background: #0b0f14;
+        font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+        color: #f3f4f6;
+      }
+      .tile {
+        width: 1400px;
+        height: 560px;
+        background:
+          radial-gradient(ellipse at 12% 10%, #1e3a5f 0%, transparent 50%),
+          #0b0f14;
+        display: flex;
+        align-items: center;
+        padding: 0 72px;
+        gap: 28px;
+        box-sizing: border-box;
+      }
+      img {
+        width: 120px;
+        height: 120px;
+        border-radius: 28px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 56px;
+        font-weight: 650;
+        letter-spacing: -0.03em;
+      }
+      p {
+        margin: 12px 0 0;
+        font-size: 24px;
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tile">
+      <img src="../../../extension/icons/icon128.png" alt="" />
+      <div>
+        <h1>NullClipper</h1>
+        <p>Snip or GIF the current tab.</p>
+      </div>
+    </div>
+  </body>
+</html>

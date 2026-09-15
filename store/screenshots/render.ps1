@@ -1,4 +1,4 @@
-# Render CWS-sized 24-bit PNGs from store/screenshots/src (1280x800 and 440x280).
+# Render CWS-sized 24-bit PNGs (no alpha, no DPI metadata).
 # Usage: powershell -File store/screenshots/render.ps1
 
 $ErrorActionPreference = 'Stop'
@@ -6,11 +6,10 @@ $ErrorActionPreference = 'Stop'
 $here = $PSScriptRoot
 $repo = Split-Path (Split-Path $here -Parent) -Parent
 $chrome = 'C:\Program Files\Google\Chrome\Application\chrome.exe'
+$encode = Join-Path $here 'encode.py'
 if (-not (Test-Path $chrome)) {
   throw "Chrome not found at $chrome"
 }
-
-Add-Type -AssemblyName System.Drawing
 
 function Save-StorePng {
   param(
@@ -39,31 +38,12 @@ function Save-StorePng {
   if (-not (Test-Path $raw)) {
     throw "Chrome did not write $raw"
   }
-
-  $srcImg = [System.Drawing.Image]::FromFile($raw)
   try {
-    $bmp = New-Object System.Drawing.Bitmap $Width, $Height, ([System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
-    try {
-      $g = [System.Drawing.Graphics]::FromImage($bmp)
-      $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-      $g.Clear([System.Drawing.Color]::FromArgb(11, 15, 20))
-      $g.DrawImage($srcImg, 0, 0, $Width, $Height)
-      $g.Dispose()
-      $bmp.Save($out, [System.Drawing.Imaging.ImageFormat]::Png)
-    } finally {
-      $bmp.Dispose()
-    }
+    python $encode $raw $out $Width $Height
+    if ($LASTEXITCODE -ne 0) { throw "encode.py failed for $OutName" }
   } finally {
-    $srcImg.Dispose()
     Remove-Item $raw -Force -ErrorAction SilentlyContinue
     Remove-Item $profile -Recurse -Force -ErrorAction SilentlyContinue
-  }
-
-  $check = [System.Drawing.Image]::FromFile($out)
-  try {
-    Write-Host "Wrote $out ($($check.Width)x$($check.Height) $($check.PixelFormat))"
-  } finally {
-    $check.Dispose()
   }
 }
 
@@ -78,12 +58,13 @@ try {
       Start-Sleep -Milliseconds 150
     }
   }
-  if (-not $ready) { throw 'Local screenshot server did not start on port 8765.' }
+  if (-not ($ready)) { throw 'Local screenshot server did not start on port 8765.' }
 
-  Save-StorePng -HtmlName 'popup.html' -OutName 'popup.png' -Width 1280 -Height 800
-  Save-StorePng -HtmlName 'overlay.html' -OutName 'overlay.png' -Width 1280 -Height 800
-  Save-StorePng -HtmlName 'settings.html' -OutName 'settings.png' -Width 1280 -Height 800
-  Save-StorePng -HtmlName 'promo.html' -OutName 'promo-440x280.png' -Width 440 -Height 280
+  Save-StorePng -HtmlName 'popup.html' -OutName 'screenshot-1.png' -Width 1280 -Height 800
+  Save-StorePng -HtmlName 'overlay.html' -OutName 'screenshot-2.png' -Width 1280 -Height 800
+  Save-StorePng -HtmlName 'settings.html' -OutName 'screenshot-3.png' -Width 1280 -Height 800
+  Save-StorePng -HtmlName 'promo.html' -OutName 'promo-small.png' -Width 440 -Height 280
+  Save-StorePng -HtmlName 'promo-marquee.html' -OutName 'promo-marquee.png' -Width 1400 -Height 560
 } finally {
   if ($server -and -not $server.HasExited) {
     Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue

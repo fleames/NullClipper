@@ -9,7 +9,7 @@ Privacy URL to paste everywhere:
 
 **https://github.com/fleames/NullClipper/blob/main/store/privacy.md**
 
-Copy-paste text: [`LISTING.md`](LISTING.md). Screenshots: [`screenshots/`](screenshots/) (1280×800). Promo: `screenshots/promo-440x280.png`.
+Copy-paste text: [`LISTING.md`](LISTING.md). Screenshots: [`screenshots/screenshot-1.png`](screenshots/) … `screenshot-3.png` (exactly 1280×800, 24-bit PNG, no alpha). Small promo: `screenshots/promo-small.png`. Marquee: `screenshots/promo-marquee.png`.
 
 ---
 
@@ -25,8 +25,9 @@ Pay **$5 USD once** with a Google account, then upload.
    - Summary + description from [`LISTING.md`](LISTING.md)  
    - Category: **Productivity**  
    - Language: **English**  
-   - Screenshots: `popup.png`, `overlay.png`, `settings.png`  
-   - Small promo tile (optional): `promo-440x280.png`  
+   - Screenshots: `screenshot-1.png`, `screenshot-2.png`, `screenshot-3.png` (folder: `store/screenshots/`)  
+   - Small promo tile (optional): `promo-small.png` (440×280)  
+   - Marquee (optional): `promo-marquee.png` (1400×560)  
    - Homepage: https://github.com/fleames/NullClipper
 5. Privacy:
    - Privacy policy URL: the GitHub link above  

@@ -4,7 +4,7 @@ Language: **English (United States)**
 Category: **Productivity**  
 Name: **NullClipper** (must match the extension)
 
-Paste these fields into Chrome Web Store, then reuse them on Edge and Opera. Screenshots: `store/screenshots/` (1280×800, 24-bit PNG). Promo tile: `promo-440x280.png`.
+Paste these fields into Chrome Web Store, then reuse them on Edge and Opera. Drag screenshots from `store/screenshots/` (`screenshot-1.png` … `screenshot-3.png`, exactly 1280×800, 24-bit PNG, no alpha). Small promo: `promo-small.png` (440×280). Marquee: `promo-marquee.png` (1400×560).
 
 Privacy policy URL (after this file is on `main`):
 
@@ -78,9 +78,9 @@ Requested only if you enable NullImage, and only for the server origin you enter
 
 ## Screenshot captions (optional)
 
-1. Popup — capture the current tab, pick Snip or GIF.
-2. Crop overlay — freeze-frame, drag a region, Esc cancels.
-3. Settings — optional NullImage server, expiry, burn-after-view.
+1. `screenshot-1.png` — popup: capture the current tab, pick Snip or GIF.
+2. `screenshot-2.png` — crop overlay: freeze-frame, drag a region, Esc cancels.
+3. `screenshot-3.png` — settings: optional NullImage server, expiry, burn-after-view.
 
 ## Support
 
