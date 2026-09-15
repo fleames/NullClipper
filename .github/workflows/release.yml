@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (for example v1.0.1). Ignored when this run is already a tag push."
+        required: false
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF_TYPE -eq "tag") { $env:GITHUB_REF_NAME } else { "${{ github.event.inputs.tag }}" }
+          if ([string]::IsNullOrWhiteSpace($tag)) { $tag = "v1.0.0" }
+          $version = $tag.TrimStart("v")
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Publishing $tag ($version)"
+
+      - name: Publish win-x64 (self-contained)
+        run: >
+          dotnet publish Clipper.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:DebugType=None
+          -p:DebugSymbols=false
+          -o dist/win-x64
+
+      - name: Package zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path dist/win-x64/* -DestinationPath dist/NullClipper-win-x64.zip -Force
+          Copy-Item dist/win-x64/NullClipper.exe dist/NullClipper.exe -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: NullClipper ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            dist/NullClipper.exe
+            dist/NullClipper-win-x64.zip
+          body: |
+            ## NullClipper ${{ steps.version.outputs.tag }}
+
+            Download **NullClipper.exe** and run it. No .NET install required (self-contained win-x64).
+
+            The zip is the same build if you prefer a folder instead of a single file.
+
+            ### What's inside
+            - Tray snipping tool for Windows
+            - Region, freeform, window, and fullscreen capture
+            - Optional NullImage encrypted share links

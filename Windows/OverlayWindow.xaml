@@ -1,0 +1,120 @@
+<Window x:Class="Clipper.Windows.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NullClipper"
+        Icon="pack://application:,,,/Assets/clipper-icon.png"
+        WindowStyle="None"
+        AllowsTransparency="False"
+        Background="#FF111111"
+        Opacity="1"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="True"
+        WindowStartupLocation="Manual"
+        ResizeMode="NoResize"
+        Cursor="Cross"
+        Focusable="True"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+    <Window.Resources>
+        <Style x:Key="ModeButton" TargetType="Button">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Image x:Name="FrozenImage"
+               Stretch="Fill"
+               RenderOptions.BitmapScalingMode="NearestNeighbor"
+               RenderOptions.EdgeMode="Aliased"/>
+        <Path x:Name="DimPath" Fill="#99000000"/>
+        <Canvas x:Name="SelectionCanvas" IsHitTestVisible="False">
+            <Rectangle x:Name="SelectionBorder"
+                       Stroke="White"
+                       StrokeThickness="2"
+                       Fill="Transparent"
+                       Visibility="Collapsed"/>
+            <Rectangle x:Name="WindowHighlight"
+                       Stroke="#FF60A5FA"
+                       StrokeThickness="3"
+                       Fill="#22007AFF"
+                       Visibility="Collapsed"/>
+            <Polyline x:Name="FreeformLine"
+                      Stroke="White"
+                      StrokeThickness="2"
+                      StrokeLineJoin="Round"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Visibility="Collapsed"/>
+        </Canvas>
+        <Border x:Name="SizeBadge"
+                Background="#E31F2937"
+                CornerRadius="8"
+                Padding="10,5"
+                Visibility="Collapsed"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                IsHitTestVisible="False">
+            <TextBlock x:Name="SizeText"
+                       Foreground="White"
+                       FontFamily="{StaticResource AppFont}"
+                       FontSize="13"
+                       FontWeight="SemiBold"/>
+        </Border>
+        <Border x:Name="Toolbar"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,20,0,0"
+                Background="#E22C2C2C"
+                CornerRadius="12"
+                Padding="8,6"
+                Cursor="Arrow">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="RectangleButton"
+                        Style="{StaticResource ModeButton}"
+                        Content="&#xE7A8;"
+                        ToolTip="Rectangular snip"
+                        Click="OnRectangleMode"/>
+                <Button x:Name="FreeformButton"
+                        Style="{StaticResource ModeButton}"
+                        Content="&#xED5F;"
+                        ToolTip="Freeform snip"
+                        Click="OnFreeformMode"/>
+                <Button x:Name="WindowButton"
+                        Style="{StaticResource ModeButton}"
+                        Content="&#xE78B;"
+                        ToolTip="Window snip"
+                        Click="OnWindowMode"/>
+                <Button x:Name="FullScreenButton"
+                        Style="{StaticResource ModeButton}"
+                        Content="&#xE740;"
+                        ToolTip="Fullscreen snip"
+                        Click="OnFullScreen"/>
+                <Rectangle Width="1" Fill="#55FFFFFF" Margin="6,8"/>
+                <Button x:Name="CloseButton"
+                        Style="{StaticResource ModeButton}"
+                        Content="&#xE711;"
+                        ToolTip="Close"
+                        Click="OnCloseClicked"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

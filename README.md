@@ -1,0 +1,118 @@
+<p align="center">
+  <img src="Assets/clipper-icon.png" width="96" height="96" alt="NullClipper icon">
+</p>
+
+<h1 align="center">NullClipper</h1>
+
+<p align="center">
+  <strong>A Windows snipping tool that lives in the tray.</strong><br>
+  Draw a region, copy the image. Optionally upload an encrypted share link instead.
+</p>
+
+<p align="center">
+  <a href="https://github.com/fleames/NullClipper/releases/latest"><img src="https://img.shields.io/github/v/release/fleames/NullClipper?style=flat-square&label=release&color=3B82F6" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/fleames/NullClipper?style=flat-square&color=111827" alt="MIT license"></a>
+  <a href="https://github.com/fleames/NullClipper/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/fleames/NullClipper/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status"></a>
+  <img src="https://img.shields.io/badge/.NET-8%20Windows-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt=".NET 8 Windows">
+</p>
+
+<p align="center">
+  <a href="https://github.com/fleames/NullClipper/releases/latest"><strong>Download NullClipper.exe</strong></a>
+  · Windows 10/11 x64 · no .NET install required
+</p>
+
+---
+
+<p align="center">
+  <img src="docs/screenshots/overlay.png" alt="NullClipper overlay: dimmed screen, mode toolbar, rectangular selection with size badge" width="860">
+</p>
+<p align="center"><sub>Toolbar on the overlay: rectangle, freeform, window, fullscreen. Esc cancels.</sub></p>
+
+<p align="center">
+  <img src="docs/screenshots/settings.png" alt="NullClipper settings: hotkey recorder, start with Windows, NullImage upload options" width="340">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/tray.png" alt="Windows tray balloon: NullClipper is ready" width="380">
+</p>
+<p align="center">
+  <img src="docs/screenshots/toast.png" alt="In-app toast: Snip saved to clipboard" width="320">
+</p>
+
+## Why this exists
+
+Windows already has a snipping tool. NullClipper is the version that stays out of the way: one hotkey, a thin overlay, image on the clipboard, done. No editor, no cloud account, no Start-menu window you have to hunt for.
+
+If you want to send the snip instead of pasting it, turn on **NullImage**. The upload is encrypted on your machine. The server never sees the pixels — only ciphertext — and the key lives in the link fragment.
+
+## Features
+
+- **Clipboard snips** — region, freeform, window, or the whole screen. PNG lands on the clipboard.
+- **Click-to-record hotkey** — open Settings, click the hotkey field, press the keys you want. Default is `Ctrl + Shift + X`.
+- **Tray app** — left-click the icon to capture, right-click for Settings / Exit. Single-instance; a second launch just starts another snip.
+- **Multi-monitor** — overlay on every display, freeze-frame so nothing moves while you drag.
+- **Start with Windows** — optional Run-key registration.
+- **NullImage (optional)** — encrypted share link instead of an image. Off unless you check the box.
+
+## Install
+
+1. Open the [latest GitHub Release](https://github.com/fleames/NullClipper/releases/latest).
+2. Download **`NullClipper.exe`** (self-contained win-x64) and run it.
+3. Or grab **`NullClipper-win-x64.zip`** if you prefer a folder.
+
+The exe is a tray app. It will not keep a window open. Look for the scissors-and-link icon near the clock, or the “NullClipper is ready” balloon.
+
+## Usage
+
+| Action | What happens |
+| --- | --- |
+| `Ctrl + Shift + X` (or your hotkey) | Overlay appears over a frozen screenshot |
+| Drag | Rectangular (or freeform) selection |
+| Click a window in window mode | Snips that window’s bounds |
+| Fullscreen button | Whole monitor |
+| `Esc` / right-click | Cancel |
+| Left-click the tray icon | Same as the hotkey |
+
+After a snip, a small toast confirms **Snip saved to clipboard** (or that a NullImage link was copied). Paste into chat, an editor, anything that accepts an image.
+
+### Settings
+
+Right-click the tray icon → **Settings**.
+
+- **Capture now** — fire a snip without the hotkey.
+- **Hotkey** — click, then press a shortcut. Esc leaves the old one.
+- **Start NullClipper with Windows** — logon launch.
+- **Quit NullClipper** — leaves the tray.
+
+## NullImage
+
+NullImage is **optional**. NullClipper is a complete snipping tool with that checkbox off.
+
+When it is on, each snip is encrypted with AES-256-GCM on the client (`ni1-aes-gcm-256`, same scheme as the [NullImage](https://nullimage.org) web app) and uploaded to `nullimage.org`. The clipboard gets a share URL with the key in the `#fragment`, so it never hits the server. You can set expiry (1 hour → never), burn-after-view, and an optional password.
+
+If upload fails, NullClipper copies the image instead and tells you.
+
+No API key. No account. Passwords you type in Settings are stored only in `%AppData%\Clipper\settings.json` on your PC — that file is not part of this repo.
+
+## Build from source
+
+Requires **.NET 8 SDK** on Windows.
+
+```powershell
+dotnet build Clipper.csproj -c Release
+dotnet run --project Clipper.csproj -c Release
+```
+
+Self-contained publish (what the Release workflow ships):
+
+```powershell
+dotnet publish Clipper.csproj -c Release -r win-x64 --self-contained true `
+  -p:PublishSingleFile=true `
+  -p:IncludeNativeLibrariesForSelfExtract=true `
+  -p:EnableCompressionInSingleFile=true `
+  -o dist/win-x64
+```
+
+CI builds every push to `main`. Push a tag `v*` (for example `v1.0.1`) to cut a new GitHub Release with `NullClipper.exe` and `NullClipper-win-x64.zip`.
+
+## License
+
+[MIT](LICENSE) © 2026 fleames
