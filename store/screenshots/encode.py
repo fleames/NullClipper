@@ -54,6 +54,59 @@ def font(name: str, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(rf"C:\Windows\Fonts\{name}", size)
 
 
+def cover_canvas(im: Image.Image, width: int, height: int) -> Image.Image:
+    src = im.convert("RGB")
+    scale = max(width / src.width, height / src.height)
+    nw = max(1, round(src.width * scale))
+    nh = max(1, round(src.height * scale))
+    if (nw, nh) != src.size:
+        src = src.resize((nw, nh), Image.Resampling.LANCZOS)
+    left = max(0, (nw - width) // 2)
+    top = max(0, (nh - height) // 2)
+    return src.crop((left, top, left + width, top + height))
+
+
+def compose_opera_promo(bg: Image.Image | None = None) -> Image.Image:
+    w, h = 300, 188
+    if bg is not None:
+        filled = cover_canvas(bg, w, h)
+        brand = Image.new("RGB", (w, h), CANVAS)
+        out = Image.blend(brand, filled, 0.78)
+    else:
+        out = Image.new("RGB", (w, h), CANVAS)
+        glow = Image.new("RGB", (w, h), CANVAS)
+        ImageDraw.Draw(glow).ellipse((-90, -100, 210, 170), fill=(59, 130, 246))
+        out = Image.blend(out, glow, 0.28)
+
+    icon_path = HERE.parent.parent / "Assets" / "clipper-icon.png"
+    if not icon_path.exists():
+        icon_path = HERE.parent.parent / "extension" / "icons" / "clipper-icon.png"
+    icon_px = 64
+    icon = Image.open(icon_path).convert("RGBA").resize((icon_px, icon_px), Image.Resampling.LANCZOS)
+    layer = out.convert("RGBA")
+    ix, iy = 16, (h - icon_px) // 2
+    layer.paste(icon, (ix, iy), icon)
+    rgb = layer.convert("RGB")
+
+    draw = ImageDraw.Draw(rgb)
+    draw.rectangle((0, 0, 3, h), fill=(59, 130, 246))
+
+    title_font = font("segoeuib.ttf", 22)
+    sub_font = font("segoeui.ttf", 13)
+    title = "NullClipper"
+    sub = "Snip or GIF this tab"
+    tx = ix + icon_px + 12
+    title_box = draw.textbbox((0, 0), title, font=title_font)
+    sub_box = draw.textbbox((0, 0), sub, font=sub_font)
+    title_h = title_box[3] - title_box[1]
+    sub_h = sub_box[3] - sub_box[1]
+    block_h = title_h + 6 + sub_h
+    ty = (h - block_h) // 2 - 2
+    draw.text((tx, ty), title, fill=(243, 244, 246), font=title_font)
+    draw.text((tx, ty + title_h + 6), sub, fill=(156, 163, 175), font=sub_font)
+    return rgb
+
+
 def compose_marquee(preview: Image.Image) -> Image.Image:
     w, h = 1400, 560
     out = Image.new("RGB", (w, h), CANVAS)
@@ -117,12 +170,17 @@ def main() -> None:
     preview_path = HERE / "screenshot-1.png"
     save_png24(compose_marquee(Image.open(preview_path)), HERE / "promo-marquee.png")
 
+    opera_bg = HERE / "src" / "promo-opera-bg.png"
+    save_png24(compose_opera_promo(Image.open(opera_bg) if opera_bg.exists() else None), HERE / "promo-opera-300x188.png")
+
     for name in (
         "screenshot-1.png",
         "screenshot-2.png",
         "screenshot-3.png",
         "promo-small.png",
         "promo-marquee.png",
+        "promo-opera-300x188.png",
+        "icon64.png",
     ):
         print(inspect_png(HERE / name))
 

@@ -9,7 +9,7 @@ Privacy URL to paste everywhere:
 
 **https://github.com/fleames/NullClipper/blob/main/store/privacy.md**
 
-Copy-paste text: [`LISTING.md`](LISTING.md). Screenshots: [`screenshots/screenshot-1.png`](screenshots/) … `screenshot-3.png` (exactly 1280×800, 24-bit PNG, no alpha). Small promo: `screenshots/promo-small.png`. Marquee: `screenshots/promo-marquee.png`.
+Copy-paste text: [`LISTING.md`](LISTING.md). Screenshots: [`screenshots/screenshot-1.png`](screenshots/) … `screenshot-3.png` (exactly 1280×800, 24-bit PNG, no alpha). Small promo: `screenshots/promo-small.png`. Marquee: `screenshots/promo-marquee.png`. Opera optional promo: `screenshots/promo-opera-300x188.png` (300×188). Opera media icon: `screenshots/icon64.png` (64×64).
 
 ---
 
@@ -71,7 +71,8 @@ Sideload on Opera still wants **Developer mode** and can hit **ExtensionsSetting
 2. Sign in with the Opera account you want as publisher.
 3. New extension → upload `dist/NullClipper-extension.zip`.
 4. Listing: same name, English, Productivity-style category Opera offers, screenshots, privacy URL.  
-   **Media tab icon:** upload `store/screenshots/icon64.png` (exactly **64×64**, 24-bit PNG, no alpha). Opera rejects 48×48 and other sizes.
+   **Media tab icon:** upload `store/screenshots/icon64.png` (exactly **64×64**, 24-bit PNG, no alpha). Opera rejects 48×48 and other sizes.  
+   **Promotional image (optional):** upload `store/screenshots/promo-opera-300x188.png` (exactly **300×188**, 24-bit PNG, no alpha).
 5. Submit.
 
 **Review time:** often a few days.

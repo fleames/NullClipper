@@ -4,7 +4,7 @@ Language: **English (United States)**
 Category: **Productivity**  
 Name: **NullClipper** (must match the extension)
 
-Paste these fields into Chrome Web Store, then reuse them on Edge and Opera. Drag screenshots from `store/screenshots/` (`screenshot-1.png` … `screenshot-3.png`, exactly 1280×800, 24-bit PNG, no alpha). Small promo: `promo-small.png` (440×280). Marquee: `promo-marquee.png` (1400×560).
+Paste these fields into Chrome Web Store, then reuse them on Edge and Opera. Drag screenshots from `store/screenshots/` (`screenshot-1.png` … `screenshot-3.png`, exactly 1280×800, 24-bit PNG, no alpha). Small promo: `promo-small.png` (440×280). Marquee: `promo-marquee.png` (1400×560). Opera optional promo: `promo-opera-300x188.png` (300×188). Opera media icon: `icon64.png` (64×64).
 
 Privacy policy URL (after this file is on `main`):
 

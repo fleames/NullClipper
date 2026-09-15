@@ -65,6 +65,7 @@ try {
   Save-StorePng -HtmlName 'settings.html' -OutName 'screenshot-3.png' -Width 1280 -Height 800
   Save-StorePng -HtmlName 'promo.html' -OutName 'promo-small.png' -Width 440 -Height 280
   Save-StorePng -HtmlName 'promo-marquee.html' -OutName 'promo-marquee.png' -Width 1400 -Height 560
+  Save-StorePng -HtmlName 'promo-opera.html' -OutName 'promo-opera-300x188.png' -Width 300 -Height 188
 } finally {
   if ($server -and -not $server.HasExited) {
     Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
