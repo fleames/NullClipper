@@ -4,10 +4,51 @@
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <SolidColorBrush x:Key="AccentBrush" Color="#3B82F6"/>
-        <SolidColorBrush x:Key="WindowBgBrush" Color="#111827"/>
-        <SolidColorBrush x:Key="CardBgBrush" Color="#1F2937"/>
-        <SolidColorBrush x:Key="TextBrush" Color="#F9FAFB"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#2563EB"/>
+        <SolidColorBrush x:Key="AccentPressBrush" Color="#1D4ED8"/>
+        <SolidColorBrush x:Key="AccentPressedBrush" Color="#1D4ED8"/>
+        <SolidColorBrush x:Key="AccentSoftBrush" Color="#1E3A5F"/>
+        <SolidColorBrush x:Key="WindowBgBrush" Color="#0B0F14"/>
+        <SolidColorBrush x:Key="TitleBarBgBrush" Color="#0B0F14"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#12181F"/>
+        <SolidColorBrush x:Key="CardBgBrush" Color="#12181F"/>
+        <SolidColorBrush x:Key="FieldBgBrush" Color="#0C1016"/>
+        <SolidColorBrush x:Key="KeycapBgBrush" Color="#1A222C"/>
+        <SolidColorBrush x:Key="KeycapBrush" Color="#1A222C"/>
+        <SolidColorBrush x:Key="HairlineBrush" Color="#1E2834"/>
+        <SolidColorBrush x:Key="HairlineSoftBrush" Color="#14FFFFFF"/>
+        <SolidColorBrush x:Key="EdgeBrush" Color="#1E2834"/>
+        <SolidColorBrush x:Key="EdgeHoverBrush" Color="#2A3544"/>
+        <SolidColorBrush x:Key="TextBrush" Color="#F3F4F6"/>
         <SolidColorBrush x:Key="MutedTextBrush" Color="#9CA3AF"/>
+        <SolidColorBrush x:Key="QuietTextBrush" Color="#6B7280"/>
+        <SolidColorBrush x:Key="DangerHoverBrush" Color="#F87171"/>
+        <SolidColorBrush x:Key="SwitchOnBrush" Color="#3D4F66"/>
+        <SolidColorBrush x:Key="SwitchOffBrush" Color="#1A222C"/>
+        <SolidColorBrush x:Key="OverlayChromeBrush" Color="#F20B0F14"/>
+        <SolidColorBrush x:Key="OverlayChromeBorderBrush" Color="#331E2834"/>
+        <SolidColorBrush x:Key="OverlayToolbarBrush" Color="#F20B0F14"/>
+        <LinearGradientBrush x:Key="FieldFillBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#070A0E" Offset="0"/>
+            <GradientStop Color="#0C1016" Offset="0.22"/>
+            <GradientStop Color="#0C1016" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="CardFillBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#1A222C" Offset="0"/>
+            <GradientStop Color="#12181F" Offset="0.12"/>
+            <GradientStop Color="#12181F" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="TitleBarFillBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#141A22" Offset="0"/>
+            <GradientStop Color="#0B0F14" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="AccentFillBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#5B9AFF" Offset="0"/>
+            <GradientStop Color="#3B82F6" Offset="0.18"/>
+            <GradientStop Color="#3B82F6" Offset="1"/>
+        </LinearGradientBrush>
         <FontFamily x:Key="AppFont">Segoe UI Variable, Segoe UI</FontFamily>
+        <FontFamily x:Key="MonoFont">Cascadia Mono, Cascadia Code, Consolas, Segoe UI Variable</FontFamily>
+        <FontFamily x:Key="IconFont">Segoe MDL2 Assets</FontFamily>
     </Application.Resources>
 </Application>

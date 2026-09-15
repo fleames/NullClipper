@@ -49,6 +49,41 @@ public static class ClipboardService
         throw last ?? new InvalidOperationException("The snip could not be copied to the clipboard.");
     }
 
+    public static void CopyGif(byte[] gifBytes, Drawing.Bitmap previewFrame)
+    {
+        using var dib = To24Bpp(previewFrame);
+        _keepAlive?.Dispose();
+        _keepAlive = (Drawing.Bitmap)dib.Clone();
+
+        var data = new Forms.DataObject();
+        data.SetImage(_keepAlive);
+        data.SetData("GIF", false, new MemoryStream(gifBytes));
+        data.SetData("image/gif", false, new MemoryStream(gifBytes));
+
+        Exception? last = null;
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            try
+            {
+                Forms.Clipboard.SetDataObject(data, true, 10, 100);
+                OleFlushClipboard();
+                if (Forms.Clipboard.ContainsImage()
+                    || Forms.Clipboard.ContainsData("GIF")
+                    || Forms.Clipboard.ContainsData("image/gif"))
+                {
+                    return;
+                }
+            }
+            catch (ExternalException ex)
+            {
+                last = ex;
+                Thread.Sleep(50);
+            }
+        }
+
+        throw last ?? new InvalidOperationException("The GIF could not be copied to the clipboard.");
+    }
+
     public static BitmapSource Preview(Drawing.Bitmap bitmap) => ScreenCaptureService.ToBitmapSource(bitmap);
 
     public static void CopyText(string text)

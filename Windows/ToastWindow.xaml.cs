@@ -9,7 +9,10 @@ namespace Clipper.Windows;
 
 public partial class ToastWindow : Window
 {
-    private ToastWindow(string title, string? detail, ImageSource? preview)
+    private static ToastWindow? _current;
+    private readonly DispatcherTimer _dismiss;
+
+    private ToastWindow(string title, string? detail, ImageSource? preview, bool gif)
     {
         InitializeComponent();
         TitleText.Text = title;
@@ -24,25 +27,66 @@ public partial class ToastWindow : Window
             PreviewImage.Source = preview;
         }
 
+        GifBadge.Visibility = gif && preview is not null ? Visibility.Visible : Visibility.Collapsed;
         Opacity = 0;
         Loaded += OnLoaded;
+
+        _dismiss = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3.2) };
+        _dismiss.Tick += (_, _) =>
+        {
+            _dismiss.Stop();
+            Dismiss();
+        };
     }
 
-    public static void Show(string title, string? detail = null, BitmapSource? preview = null)
+    public static void Show(string title, string? detail = null, BitmapSource? preview = null, bool gif = false)
     {
-        var toast = new ToastWindow(title, detail, preview);
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            return;
+        }
+
+        if (!dispatcher.CheckAccess())
+        {
+            dispatcher.BeginInvoke(() => Show(title, detail, preview, gif));
+            return;
+        }
+
+        _current?.CloseQuietly();
+        var toast = new ToastWindow(title, detail, preview, gif);
+        _current = toast;
+        toast.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_current, toast))
+            {
+                _current = null;
+            }
+        };
         toast.Show();
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        PlaceAboveTaskbar();
+
+        var ease = new QuadraticEase { EasingMode = EasingMode.EaseOut };
+        BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220)) { EasingFunction = ease });
+        Slide.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty,
+            new DoubleAnimation(18, 0, TimeSpan.FromMilliseconds(240)) { EasingFunction = ease });
+
+        _dismiss.Start();
+    }
+
+    private void PlaceAboveTaskbar()
+    {
         var screen = Forms.Screen.FromPoint(Forms.Control.MousePosition);
         var working = screen.WorkingArea;
         var source = PresentationSource.FromVisual(this);
-        var transform = source?.CompositionTarget?.TransformFromDevice;
+        var fromDevice = source?.CompositionTarget?.TransformFromDevice;
         var pixelX = working.Left + (working.Width - ActualWidth) / 2.0;
-        var pixelY = working.Bottom - ActualHeight - 28;
-        if (transform is { } matrix)
+        var pixelY = working.Bottom - ActualHeight - 36;
+        if (fromDevice is { } matrix)
         {
             var dip = matrix.Transform(new System.Windows.Point(pixelX, pixelY));
             Left = dip.X;
@@ -53,18 +97,28 @@ public partial class ToastWindow : Window
             Left = pixelX;
             Top = pixelY;
         }
+    }
 
-        var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160));
-        BeginAnimation(OpacityProperty, fadeIn);
+    private void Dismiss()
+    {
+        var ease = new QuadraticEase { EasingMode = EasingMode.EaseIn };
+        var fade = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(240)) { EasingFunction = ease };
+        fade.Completed += (_, _) => CloseQuietly();
+        BeginAnimation(OpacityProperty, fade);
+        Slide.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty,
+            new DoubleAnimation(0, 12, TimeSpan.FromMilliseconds(240)) { EasingFunction = ease });
+    }
 
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-        timer.Tick += (_, _) =>
+    private void CloseQuietly()
+    {
+        _dismiss.Stop();
+        try
         {
-            timer.Stop();
-            var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(220));
-            fadeOut.Completed += (_, _) => Close();
-            BeginAnimation(OpacityProperty, fadeOut);
-        };
-        timer.Start();
+            Close();
+        }
+        catch
+        {
+            // Already closing.
+        }
     }
 }

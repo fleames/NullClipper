@@ -35,7 +35,7 @@ public partial class App : System.Windows.Application
 
         _settings = new SettingsStore();
         _settings.Load();
-        _settings.Current.MigrateLegacyHotkey();
+        _settings.Current.Normalize();
         _settings.Current.StartWithWindows = StartupService.IsEnabled();
         _settings.Save(_settings.Current);
 
@@ -162,9 +162,9 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        if (_settingsWindow is { IsVisible: true })
+        if (_settingsWindow is not null)
         {
-            _settingsWindow.Activate();
+            _settingsWindow.Reveal();
             return;
         }
 

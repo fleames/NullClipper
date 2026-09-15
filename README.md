@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>A Windows snipping tool that lives in the tray.</strong><br>
-  Draw a region, copy the image. Optionally upload an encrypted share link instead.
+  Draw a region, copy the image — or record a short GIF. Optionally upload an encrypted share link instead.
 </p>
 
 <p align="center">
@@ -24,17 +24,17 @@
 ---
 
 <p align="center">
-  <img src="docs/screenshots/overlay.png" alt="NullClipper overlay: dimmed screen, mode toolbar, rectangular selection with size badge" width="860">
+  <img src="docs/screenshots/overlay.png" alt="NullClipper overlay: dimmed screen, Snip and GIF toolbar, rectangular selection with size badge" width="860">
 </p>
-<p align="center"><sub>Toolbar on the overlay: rectangle, freeform, window, fullscreen. Esc cancels.</sub></p>
+<p align="center"><sub>Overlay toolbar: Snip or GIF, then rectangle, freeform, window, fullscreen. Esc cancels.</sub></p>
 
 <p align="center">
-  <img src="docs/screenshots/settings.png" alt="NullClipper settings: hotkey recorder, start with Windows, NullImage upload options" width="340">
+  <img src="docs/screenshots/settings.png" alt="NullClipper settings: Snip or GIF selector, hotkey recorder, start with Windows, NullImage upload options" width="340">
   &nbsp;&nbsp;
   <img src="docs/screenshots/tray.png" alt="Windows tray balloon: NullClipper is ready" width="380">
 </p>
 <p align="center">
-  <img src="docs/screenshots/toast.png" alt="In-app toast: Snip saved to clipboard" width="320">
+  <img src="docs/screenshots/toast.png" alt="In-app toast: Snip saved to clipboard with thumbnail preview" width="360">
 </p>
 
 ## Why this exists
@@ -46,8 +46,9 @@ If you want to send the snip instead of pasting it, turn on **NullImage**. The u
 ## Features
 
 - **Clipboard snips** — region, freeform, window, or the whole screen. PNG lands on the clipboard.
+- **GIF capture** — record a region at 12 fps for up to 8 seconds. Longest side is capped at 640px so files stay small.
 - **Click-to-record hotkey** — open Settings, click the hotkey field, press the keys you want. Default is `Ctrl + Shift + X`.
-- **Tray app** — left-click the icon to capture, right-click for Settings / Exit. Single-instance; a second launch just starts another snip.
+- **Tray app** — left-click the icon to capture, right-click for Settings / Exit. Settings hides to the tray (minimize, no title-bar close). Single-instance; a second launch just starts another snip.
 - **Multi-monitor** — overlay on every display, freeze-frame so nothing moves while you drag.
 - **Start with Windows** — optional Run-key registration.
 - **NullImage (optional)** — encrypted share link instead of an image. Off unless you check the box.
@@ -65,19 +66,21 @@ The exe is a tray app. It will not keep a window open. Look for the scissors-and
 | Action | What happens |
 | --- | --- |
 | `Ctrl + Shift + X` (or your hotkey) | Overlay appears over a frozen screenshot |
+| Snip / GIF on the toolbar | Still image, or a short recording of the region |
 | Drag | Rectangular (or freeform) selection |
 | Click a window in window mode | Snips that window’s bounds |
 | Fullscreen button | Whole monitor |
 | `Esc` / right-click | Cancel |
 | Left-click the tray icon | Same as the hotkey |
 
-After a snip, a small toast confirms **Snip saved to clipboard** (or that a NullImage link was copied). Paste into chat, an editor, anything that accepts an image.
+After a snip, a toast confirms **Snip saved to clipboard** (or that a NullImage link was copied), with a thumbnail of what you just grabbed. Paste into chat, an editor, anything that accepts an image. GIFs copy the same way.
 
 ### Settings
 
-Right-click the tray icon → **Settings**.
+Right-click the tray icon → **Settings**. Minimize hides the window back to the tray.
 
-- **Capture now** — fire a snip without the hotkey.
+- **Snip \| GIF** — still image, or record a short clip of the same region.
+- **Capture / Record GIF** — fire a capture without the hotkey.
 - **Hotkey** — click, then press a shortcut. Esc leaves the old one.
 - **Start NullClipper with Windows** — logon launch.
 - **Quit NullClipper** — leaves the tray.
@@ -86,7 +89,7 @@ Right-click the tray icon → **Settings**.
 
 NullImage is **optional**. NullClipper is a complete snipping tool with that checkbox off.
 
-When it is on, each snip is encrypted with AES-256-GCM on the client (`ni1-aes-gcm-256`, same scheme as the [NullImage](https://nullimage.org) web app) and uploaded to `nullimage.org`. The clipboard gets a share URL with the key in the `#fragment`, so it never hits the server. You can set expiry (1 hour → never), burn-after-view, and an optional password.
+When it is on, each snip is encrypted with AES-256-GCM on the client (`ni1-aes-gcm-256`, same scheme as the [NullImage](https://nullimage.org) web app) and uploaded to `nullimage.org`. The clipboard gets a share URL with the key in the `#fragment`, so it never hits the server. You can set expiry (1 hour, 1 day, 3 days, or 7 days), burn-after-view, and an optional password.
 
 If upload fails, NullClipper copies the image instead and tells you.
 
@@ -110,7 +113,7 @@ dotnet publish Clipper.csproj -c Release -r win-x64 --self-contained false `
 
 The output is a small folder (`NullClipper.exe` plus its DLLs). Zip that folder to match the GitHub Release asset. The published app needs the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0), not a bundled copy of .NET.
 
-CI builds every push to `main`. Push a tag `v*` (for example `v1.0.1`) to cut a new GitHub Release with `NullClipper-win-x64.zip`.
+CI builds every push to `main`. Push a tag `v*` (for example `v1.1.0`) to cut a new GitHub Release with `NullClipper-win-x64.zip`.
 
 ## License
 

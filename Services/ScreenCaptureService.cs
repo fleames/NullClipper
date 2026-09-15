@@ -10,14 +10,17 @@ namespace Clipper.Services;
 
 public static class ScreenCaptureService
 {
-    public static Drawing.Bitmap Capture(Forms.Screen screen)
+    public static Drawing.Bitmap Capture(Forms.Screen screen) => CaptureRect(screen.Bounds);
+
+    public static Drawing.Bitmap CaptureRect(Drawing.Rectangle virtualRect)
     {
-        var bounds = screen.Bounds;
-        var bitmap = new Drawing.Bitmap(bounds.Width, bounds.Height, DrawingImaging.PixelFormat.Format32bppArgb);
+        var width = Math.Max(1, virtualRect.Width);
+        var height = Math.Max(1, virtualRect.Height);
+        var bitmap = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format32bppArgb);
         using var graphics = Drawing.Graphics.FromImage(bitmap);
         try
         {
-            graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size, Drawing.CopyPixelOperation.SourceCopy);
+            graphics.CopyFromScreen(virtualRect.X, virtualRect.Y, 0, 0, new Drawing.Size(width, height), Drawing.CopyPixelOperation.SourceCopy);
         }
         catch
         {

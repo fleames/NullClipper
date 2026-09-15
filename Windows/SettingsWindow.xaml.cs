@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media;
 using Clipper.Models;
 using Clipper.Native;
 using Clipper.Services;
@@ -30,44 +32,177 @@ public partial class SettingsWindow : Window
         _pauseHotkey = pauseHotkey;
         _quit = quit;
 
-        HotkeyButton.Content = store.Current.Hotkey.Label;
+        ShowHotkey(store.Current.Hotkey.Label);
+        ApplyCaptureMode(store.Current.CaptureMode, save: false);
         StartupBox.IsChecked = store.Current.StartWithWindows;
 
         NullImageEnabledBox.IsChecked = store.Current.NullImageEnabled;
         SelectExpiry(store.Current.NullImageExpiry);
         NullImageBurnBox.IsChecked = store.Current.NullImageBurnAfterView;
         NullImagePasswordBox.Password = store.Current.NullImagePassword ?? string.Empty;
+        UpdatePasswordWatermark();
+        UpdateNullImageOptions();
 
         PreviewKeyDown += OnWindowPreviewKeyDown;
+        StateChanged += OnWindowStateChanged;
         Deactivated += (_, _) => CancelRecording();
         Closed += (_, _) => CancelRecording();
     }
 
-    private void OnCaptureNow(object sender, RoutedEventArgs e)
+    private void OnSourceInitialized(object? sender, EventArgs e)
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        var ex = NativeMethods.GetWindowLong(hwnd, NativeMethods.GwlExStyle);
+        NativeMethods.SetWindowLong(hwnd, NativeMethods.GwlExStyle, ex | NativeMethods.WsExToolWindow);
+        var dark = 1;
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DwmwaUseImmersiveDarkMode, ref dark, sizeof(int));
+        var round = NativeMethods.DwmwcpRound;
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DwmwaWindowCornerPreference, ref round, sizeof(int));
+        var border = NativeMethods.DwmBorderColor;
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DwmwaBorderColor, ref border, sizeof(int));
+    }
+
+    private void OnTitleBarMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left)
+        {
+            DragMove();
+        }
+    }
+
+    private void OnMinimize(object sender, RoutedEventArgs e) => HideToTray();
+
+    private void OnWindowStateChanged(object? sender, EventArgs e)
+    {
+        if (WindowState == WindowState.Minimized)
+        {
+            HideToTray();
+        }
+    }
+
+    internal void HideToTray()
     {
         CancelRecording();
+        WindowState = WindowState.Normal;
         Hide();
+        Visibility = Visibility.Collapsed;
+    }
+
+    internal void Reveal()
+    {
+        ApplyCaptureMode(_store.Current.CaptureMode, save: false);
+        Visibility = Visibility.Visible;
+        WindowState = WindowState.Normal;
+        Show();
+        Activate();
+    }
+
+    private void OnCaptureNow(object sender, RoutedEventArgs e)
+    {
+        HideToTray();
         _capture();
     }
 
-    private void OnHotkeyClick(object sender, RoutedEventArgs e)
+    private void OnSnipMode(object sender, RoutedEventArgs e) => ApplyCaptureMode("snip", save: true);
+
+    private void OnGifMode(object sender, RoutedEventArgs e) => ApplyCaptureMode("gif", save: true);
+
+    private void ApplyCaptureMode(string mode, bool save)
+    {
+        var gif = string.Equals(mode, "gif", StringComparison.OrdinalIgnoreCase);
+        SnipModeButton.IsChecked = !gif;
+        GifModeButton.IsChecked = gif;
+        CaptureTitle.Text = gif ? "Record GIF" : "Capture";
+        CaptureSubtitle.Text = gif
+            ? "Select a region, then Stop or wait 8s"
+            : "Region, window, or full screen";
+        CaptureModeHint.Text = gif
+            ? "GIF records the selected rectangle at 12 fps for up to 8s. Longest side is capped at 640px so files stay small."
+            : "Snip copies a still image. Switch to GIF to record a short clip of the same region.";
+        if (save)
+        {
+            var settings = _store.Current;
+            settings.CaptureMode = gif ? "gif" : "snip";
+            _store.Save(settings);
+        }
+    }
+
+    private void ShowHotkey(string label)
+    {
+        HotkeyRecorder.Tag = null;
+        RecordingDot.Visibility = Visibility.Collapsed;
+        HotkeyChips.Children.Clear();
+        foreach (var part in label.Split(" + ", StringSplitOptions.RemoveEmptyEntries))
+        {
+            HotkeyChips.Children.Add(CreateKeycap(part));
+        }
+    }
+
+    private void ShowHotkeyRecording()
+    {
+        HotkeyRecorder.Tag = "rec";
+        RecordingDot.Visibility = Visibility.Visible;
+        HotkeyChips.Children.Clear();
+        HotkeyChips.Children.Add(new TextBlock
+        {
+            Text = "Press a shortcut…",
+            FontFamily = (FontFamily)FindResource("MonoFont"),
+            FontSize = 12,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = (Brush)FindResource("MutedTextBrush"),
+            VerticalAlignment = VerticalAlignment.Center
+        });
+    }
+
+    private Border CreateKeycap(string text)
+    {
+        return new Border
+        {
+            Background = (Brush)FindResource("KeycapBgBrush"),
+            BorderBrush = (Brush)FindResource("EdgeHoverBrush"),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(8, 4, 8, 4),
+            Margin = new Thickness(0, 0, 6, 0),
+            MinWidth = 28,
+            SnapsToDevicePixels = true,
+            Child = new TextBlock
+            {
+                Text = text,
+                FontFamily = (FontFamily)FindResource("MonoFont"),
+                FontSize = 12,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("TextBrush"),
+                HorizontalAlignment = HorizontalAlignment.Center
+            }
+        };
+    }
+
+    private void OnHotkeyClick(object sender, MouseButtonEventArgs e)
     {
         if (_recording)
         {
             return;
         }
 
+        e.Handled = true;
         _recording = true;
         _pauseHotkey();
-        HotkeyButton.Content = "Press a shortcut…";
+        ShowHotkeyRecording();
         HotkeyHint.Text = "Esc cancels without changing it.";
-        HotkeyButton.Focus();
+        HotkeyRecorder.Focus();
     }
 
     private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (!_recording)
         {
+            if (e.Key == Key.Escape)
+            {
+                HideToTray();
+                e.Handled = true;
+            }
+
             return;
         }
 
@@ -120,7 +255,7 @@ public partial class SettingsWindow : Window
         settings.SetHotkey(binding);
         _store.Save(settings);
         _recording = false;
-        HotkeyButton.Content = binding.Label;
+        ShowHotkey(binding.Label);
         HotkeyHint.Text = "Click, then press the keys you want.";
         _applyHotkey();
     }
@@ -133,7 +268,7 @@ public partial class SettingsWindow : Window
         }
 
         _recording = false;
-        HotkeyButton.Content = _store.Current.Hotkey.Label;
+        ShowHotkey(_store.Current.Hotkey.Label);
         HotkeyHint.Text = "Click, then press the keys you want.";
         _applyHotkey();
     }
@@ -171,6 +306,13 @@ public partial class SettingsWindow : Window
         var settings = _store.Current;
         settings.NullImageEnabled = NullImageEnabledBox.IsChecked == true;
         _store.Save(settings);
+        UpdateNullImageOptions();
+    }
+
+    private void UpdateNullImageOptions()
+    {
+        NullImageOptions.Opacity = NullImageEnabledBox.IsChecked == true ? 1 : 0.45;
+        NullImageOptions.IsEnabled = NullImageEnabledBox.IsChecked == true;
     }
 
     private void OnNullImageExpiryChanged(object sender, SelectionChangedEventArgs e)
@@ -197,5 +339,13 @@ public partial class SettingsWindow : Window
         var settings = _store.Current;
         settings.NullImagePassword = string.IsNullOrEmpty(NullImagePasswordBox.Password) ? null : NullImagePasswordBox.Password;
         _store.Save(settings);
+        UpdatePasswordWatermark();
+    }
+
+    private void UpdatePasswordWatermark()
+    {
+        PasswordWatermark.Visibility = string.IsNullOrEmpty(NullImagePasswordBox.Password)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 }

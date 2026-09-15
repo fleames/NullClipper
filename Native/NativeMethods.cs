@@ -18,10 +18,21 @@ internal static class NativeMethods
     public const uint SwpShowWindow = 0x0040;
     public const uint SwpNoActivate = 0x0010;
 
+    public const int GwlStyle = -16;
     public const int GwlExStyle = -20;
+    public const int WsSysMenu = 0x00080000;
     public const int WsExToolWindow = 0x00000080;
     public const int WsExAppWindow = 0x00040000;
     public const int WsExTopMost = 0x00000008;
+
+    public const int WmNcHitTest = 0x0084;
+    public const int WmNcLButtonDown = 0x00A1;
+    public const int WmNcLButtonUp = 0x00A2;
+    public const int WmNcLButtonDblClk = 0x00A3;
+    public const int HtClient = 1;
+    public const int HtMinButton = 8;
+    public const int HtMaxButton = 9;
+    public const int HtClose = 20;
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
     public static extern IntPtr GetModuleHandle(string lpModuleName);
@@ -81,8 +92,19 @@ internal static class NativeMethods
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
+    public const int DwmwaUseImmersiveDarkMode = 20;
+    public const int DwmwaWindowCornerPreference = 33;
+    public const int DwmwaBorderColor = 34;
+    public const int DwmwaCaptionColor = 35;
+    public const int DwmwcpRound = 2;
+    public const int DwmBorderColor = 0x00413024; // #243041 as COLORREF (BBGGRR)
+    public const int DwmCaptionColor = 0x00100B08; // #080B10 as COLORREF (BBGGRR)
+
     [DllImport("dwmapi.dll")]
     public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
+
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
 
     public const int WhKeyboardLl = 13;
     public const int WmKeyDown = 0x0100;

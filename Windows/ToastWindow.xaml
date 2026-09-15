@@ -9,37 +9,93 @@
         ShowInTaskbar="False"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
-        IsHitTestVisible="False">
-    <Border Background="#F2111827"
-            CornerRadius="14"
-            Padding="14,12"
-            Margin="12">
+        IsHitTestVisible="False"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+    <Border x:Name="Card"
+            MinWidth="292"
+            MaxWidth="420"
+            Margin="18,22"
+            CornerRadius="16"
+            BorderThickness="1"
+            RenderTransformOrigin="0.5,1">
+        <Border.RenderTransform>
+            <TranslateTransform x:Name="Slide" Y="18"/>
+        </Border.RenderTransform>
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#F21A222C" Offset="0"/>
+                <GradientStop Color="#F212181F" Offset="0.16"/>
+                <GradientStop Color="#F20B0F14" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.BorderBrush>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#33FFFFFF" Offset="0"/>
+                <GradientStop Color="#1E2834" Offset="0.35"/>
+                <GradientStop Color="#1E2834" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.BorderBrush>
         <Border.Effect>
-            <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.45"/>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="8" Opacity="0.48" Direction="270" Color="#000000"/>
         </Border.Effect>
-        <DockPanel>
-            <Border x:Name="PreviewHost"
-                    Width="56"
-                    Height="40"
-                    CornerRadius="6"
-                    Background="#111827"
-                    Margin="0,0,12,0"
-                    ClipToBounds="True"
-                    DockPanel.Dock="Left">
-                <Image x:Name="PreviewImage" Stretch="UniformToFill"/>
-            </Border>
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock x:Name="TitleText"
-                           Foreground="White"
-                           FontFamily="{StaticResource AppFont}"
-                           FontSize="14"
-                           FontWeight="SemiBold"/>
-                <TextBlock x:Name="DetailText"
-                           Foreground="#9CA3AF"
-                           FontFamily="{StaticResource AppFont}"
-                           FontSize="12"
-                           Margin="0,2,0,0"/>
-            </StackPanel>
-        </DockPanel>
+        <Border BorderBrush="#14FFFFFF"
+                BorderThickness="1"
+                CornerRadius="15"
+                Padding="14,13">
+            <DockPanel>
+                <Border Width="3"
+                        CornerRadius="2"
+                        Background="{StaticResource AccentBrush}"
+                        Margin="0,3,12,3"
+                        DockPanel.Dock="Left"/>
+                <Border x:Name="PreviewHost"
+                        Width="72"
+                        Height="52"
+                        CornerRadius="11"
+                        Background="#0A0F16"
+                        BorderBrush="{StaticResource HairlineBrush}"
+                        BorderThickness="1"
+                        Margin="0,0,12,0"
+                        DockPanel.Dock="Left"
+                        ClipToBounds="True">
+                    <Grid>
+                        <Image x:Name="PreviewImage"
+                               Stretch="UniformToFill"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <Border x:Name="GifBadge"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,4,4"
+                                Background="#E33B82F6"
+                                CornerRadius="4"
+                                Padding="5,1"
+                                Visibility="Collapsed">
+                            <TextBlock Text="GIF"
+                                       Foreground="White"
+                                       FontSize="9"
+                                       FontWeight="SemiBold"
+                                       FontFamily="{StaticResource AppFont}"/>
+                        </Border>
+                    </Grid>
+                </Border>
+                <StackPanel VerticalAlignment="Center" MinWidth="160">
+                    <TextBlock x:Name="TitleText"
+                               Foreground="{StaticResource TextBrush}"
+                               FontFamily="{StaticResource AppFont}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               TextWrapping="NoWrap"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="DetailText"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontFamily="{StaticResource AppFont}"
+                               FontSize="12"
+                               Margin="0,3,0,0"
+                               TextWrapping="Wrap"
+                               MaxWidth="260"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
     </Border>
 </Window>

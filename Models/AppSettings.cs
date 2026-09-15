@@ -18,6 +18,16 @@ public sealed class AppSettings
     public bool NullImageBurnAfterView { get; set; }
     public string? NullImagePassword { get; set; }
 
+    /// <summary>
+    /// Last capture kind: "snip" or "gif". GIF v1 uses the same region overlay, then records
+    /// that frozen-size rectangle (CopyFromScreen; overlay chrome is not captured) at 12 fps
+    /// until Stop, Esc, or 8s. Longest edge is capped at 640px and encoded with AnimatedGif.
+    /// Output matches snip: clipboard and/or NullImage (image/gif).
+    /// </summary>
+    public string CaptureMode { get; set; } = "snip";
+
+    public bool IsGifMode => string.Equals(CaptureMode, "gif", StringComparison.OrdinalIgnoreCase);
+
     public HotkeyBinding Hotkey => new(HotkeyModifiers, HotkeyVirtualKey);
 
     public void SetHotkey(HotkeyBinding binding)
@@ -38,6 +48,22 @@ public sealed class AppSettings
         HotkeyModifiers = legacy.Modifiers;
         HotkeyVirtualKey = legacy.VirtualKey;
         HotkeyId = null;
+    }
+
+    public void Normalize()
+    {
+        MigrateLegacyHotkey();
+        if (!IsGifMode)
+        {
+            CaptureMode = "snip";
+        }
+
+        if (string.Equals(NullImageExpiry, "never", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(NullImageExpiry)
+            || NullImageExpiry is not ("1h" or "1d" or "3d" or "7d"))
+        {
+            NullImageExpiry = "1d";
+        }
     }
 }
 
@@ -71,7 +97,7 @@ public static class HotkeyPresets
 
 public static class HotkeyLabel
 {
-    public static string Format(uint modifiers, uint virtualKey)
+    public static List<string> Parts(uint modifiers, uint virtualKey, bool includeKey = true)
     {
         var parts = new List<string>();
         if ((modifiers & NativeMethods.ModControl) != 0)
@@ -94,9 +120,16 @@ public static class HotkeyLabel
             parts.Add("Win");
         }
 
-        parts.Add(KeyName(virtualKey));
-        return string.Join(" + ", parts);
+        if (includeKey)
+        {
+            parts.Add(KeyName(virtualKey));
+        }
+
+        return parts;
     }
+
+    public static string Format(uint modifiers, uint virtualKey) =>
+        string.Join(" + ", Parts(modifiers, virtualKey));
 
     public static string KeyName(uint virtualKey)
     {

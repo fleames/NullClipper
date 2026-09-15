@@ -29,6 +29,8 @@ public sealed class CaptureCoordinator
         _busy = true;
         var completed = false;
         _session = new CaptureSession();
+        _session.SetKind(_settings.Current.IsGifMode ? CaptureKind.Gif : CaptureKind.Snip);
+        _session.KindChanged += OnSessionKindChanged;
 
         try
         {
@@ -39,16 +41,37 @@ public sealed class CaptureCoordinator
                 var freeze = ScreenCaptureService.Capture(screen);
                 _session.Frames.Add((screen.Bounds, freeze));
                 var overlay = new OverlayWindow(screen, freeze, _session);
-                overlay.RectCaptured += rect => Complete(() => ScreenCaptureService.CropFromScreens(_session!.Frames, rect));
-                overlay.ImageCaptured += bitmap => Complete(() => bitmap);
+                overlay.RectCaptured += rect =>
+                {
+                    if (_session?.Kind == CaptureKind.Gif)
+                    {
+                        CompleteGif(rect);
+                    }
+                    else
+                    {
+                        Complete(() => ScreenCaptureService.CropFromScreens(_session!.Frames, rect));
+                    }
+                };
+                overlay.ImageCaptured += bitmap =>
+                {
+                    if (_session?.Kind == CaptureKind.Gif)
+                    {
+                        bitmap.Dispose();
+                        Complete(() => null);
+                    }
+                    else
+                    {
+                        Complete(() => bitmap);
+                    }
+                };
                 overlay.Cancelled += () => Complete(() => null);
                 _overlays.Add(overlay);
             }
 
             if (_overlays.Count == 0)
             {
+                DetachSession();
                 _busy = false;
-                _session = null;
                 return;
             }
 
@@ -103,6 +126,22 @@ public sealed class CaptureCoordinator
                 Finish(capture);
             });
         }
+
+        void CompleteGif(Rectangle rect)
+        {
+            var overlayDispatcher = _overlays.FirstOrDefault()?.Dispatcher ?? Application.Current.Dispatcher;
+            overlayDispatcher.BeginInvoke(() =>
+            {
+                if (completed)
+                {
+                    return;
+                }
+
+                completed = true;
+                CloseOverlays();
+                _ = RecordAndFinishGifAsync(rect);
+            });
+        }
     }
 
     public void Cancel()
@@ -115,11 +154,33 @@ public sealed class CaptureCoordinator
         Finish(null);
     }
 
+    private void OnSessionKindChanged(CaptureKind kind)
+    {
+        var settings = _settings.Current;
+        settings.CaptureMode = kind == CaptureKind.Gif ? "gif" : "snip";
+        _settings.Save(settings);
+    }
+
     private void Finish(Bitmap? capture)
+    {
+        CloseOverlays();
+        _busy = false;
+
+        if (capture is null)
+        {
+            return;
+        }
+
+        Application.Current.Dispatcher.BeginInvoke(
+            () => _ = FinishAsync(capture),
+            DispatcherPriority.ApplicationIdle);
+    }
+
+    private void CloseOverlays()
     {
         var overlays = _overlays.ToArray();
         _overlays.Clear();
-        _session = null;
+        DetachSession();
 
         foreach (var overlay in overlays)
         {
@@ -133,17 +194,71 @@ public sealed class CaptureCoordinator
                 // Overlay may already be closing.
             }
         }
+    }
 
-        _busy = false;
-
-        if (capture is null)
+    private void DetachSession()
+    {
+        if (_session is null)
         {
             return;
         }
 
-        Application.Current.Dispatcher.BeginInvoke(
-            () => _ = FinishAsync(capture),
-            DispatcherPriority.ApplicationIdle);
+        _session.KindChanged -= OnSessionKindChanged;
+        _session = null;
+    }
+
+    private async Task RecordAndFinishGifAsync(Rectangle region)
+    {
+        GifRecordWindow? hud = null;
+        using var cts = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(90);
+            hud = new GifRecordWindow(region, TimeSpan.FromSeconds(GifLimits.MaxDurationSeconds));
+            hud.StopRequested += () => cts.Cancel();
+            hud.Show();
+            hud.Activate();
+
+            var capturedHud = hud;
+            var result = await GifCaptureService.RecordAsync(
+                region,
+                elapsed => capturedHud.Dispatcher.Invoke(() => capturedHud.SetElapsed(elapsed)),
+                async () =>
+                {
+                    await capturedHud.Dispatcher.InvokeAsync(capturedHud.HideForCapture);
+                    await capturedHud.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+                },
+                () => capturedHud.Dispatcher.InvokeAsync(capturedHud.ShowAfterCapture).Task,
+                () => ToastWindow.Show("Encoding GIF…", "Quantizing frames", gif: true),
+                cts.Token);
+
+            hud.Close();
+            hud = null;
+
+            if (result is null)
+            {
+                return;
+            }
+
+            await FinishGifAsync(result);
+        }
+        catch (Exception ex)
+        {
+            ToastWindow.Show("Could not record GIF", ex.Message, gif: true);
+        }
+        finally
+        {
+            try
+            {
+                hud?.Close();
+            }
+            catch
+            {
+                // HUD may already be closed.
+            }
+
+            _busy = false;
+        }
     }
 
     private async Task FinishAsync(Bitmap capture)
@@ -163,6 +278,47 @@ public sealed class CaptureCoordinator
         finally
         {
             capture.Dispose();
+        }
+    }
+
+    private async Task FinishGifAsync(GifCaptureResult result)
+    {
+        try
+        {
+            var settings = _settings.Current;
+            var preview = ClipboardService.Preview(result.Preview);
+            if (settings.NullImageEnabled)
+            {
+                ToastWindow.Show("Uploading to NullImage…", $"{result.Width} × {result.Height} · {result.FrameCount} frames", preview, gif: true);
+                try
+                {
+                    var upload = await NullImageUploader.UploadBytesAsync(
+                        result.Bytes,
+                        $"clip-{DateTime.Now:yyyyMMdd-HHmmss}.gif",
+                        "image/gif",
+                        settings);
+                    ClipboardService.CopyText(upload.ShareUrl);
+                    ToastWindow.Show("Link copied to clipboard", upload.ShareUrl, preview, gif: true);
+                }
+                catch (Exception ex)
+                {
+                    ToastWindow.Show("Upload failed — copied GIF instead", ex.Message, preview, gif: true);
+                    ClipboardService.CopyGif(result.Bytes, result.Preview);
+                }
+            }
+            else
+            {
+                ClipboardService.CopyGif(result.Bytes, result.Preview);
+                ToastWindow.Show("GIF saved to clipboard", $"{result.Width} × {result.Height} · {result.FrameCount} frames", preview, gif: true);
+            }
+        }
+        catch
+        {
+            ToastWindow.Show("Could not copy GIF", "Clipboard is busy — try again", gif: true);
+        }
+        finally
+        {
+            result.Preview.Dispose();
         }
     }
 

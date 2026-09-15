@@ -8,9 +8,8 @@ using System.Text.Json.Serialization;
 namespace Clipper.Services.NullImage;
 
 /// <summary>
-/// Options for one upload. <see cref="ExpirySeconds"/> is <c>null</c> for the
-/// server's "never expires" tier (nullimage's product-spec.md); pick a value
-/// via <see cref="NullImageExpiryPresets"/>.
+/// Options for one upload. <see cref="ExpirySeconds"/> is the lifetime in seconds;
+/// NullClipper only offers finite presets (1h / 1d / 3d / 7d).
 /// </summary>
 public sealed record NullImageUploadOptions
 {

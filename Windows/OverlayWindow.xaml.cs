@@ -48,6 +48,7 @@ public partial class OverlayWindow : Window
         MouseRightButtonUp += (_, _) => RequestCancel();
         SizeChanged += (_, _) => Redraw();
         _session.ModeChanged += OnModeChanged;
+        _session.KindChanged += OnKindChanged;
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e) => PositionToScreen();
@@ -59,6 +60,7 @@ public partial class OverlayWindow : Window
         Focus();
         Keyboard.Focus(this);
         UpdateModeButtons();
+        UpdateKindButtons();
         Redraw();
     }
 
@@ -86,9 +88,30 @@ public partial class OverlayWindow : Window
         Redraw();
     }
 
+    private void OnKindChanged(CaptureKind _)
+    {
+        ResetSelection();
+        UpdateKindButtons();
+        UpdateModeButtons();
+        Cursor = _session.Mode == SnipMode.Window ? Cursors.Arrow : Cursors.Cross;
+        Redraw();
+    }
+
+    private void OnSnipKind(object sender, RoutedEventArgs e) => _session.SetKind(CaptureKind.Snip);
+
+    private void OnGifKind(object sender, RoutedEventArgs e) => _session.SetKind(CaptureKind.Gif);
+
     private void OnRectangleMode(object sender, RoutedEventArgs e) => _session.SetMode(SnipMode.Rectangle);
 
-    private void OnFreeformMode(object sender, RoutedEventArgs e) => _session.SetMode(SnipMode.Freeform);
+    private void OnFreeformMode(object sender, RoutedEventArgs e)
+    {
+        if (_session.Kind == CaptureKind.Gif)
+        {
+            return;
+        }
+
+        _session.SetMode(SnipMode.Freeform);
+    }
 
     private void OnWindowMode(object sender, RoutedEventArgs e) => _session.SetMode(SnipMode.Window);
 
@@ -325,18 +348,25 @@ public partial class OverlayWindow : Window
         }
     }
 
+    private void UpdateKindButtons()
+    {
+        Highlight(SnipKindButton, _session.Kind == CaptureKind.Snip);
+        Highlight(GifKindButton, _session.Kind == CaptureKind.Gif);
+    }
+
     private void UpdateModeButtons()
     {
         Highlight(RectangleButton, _session.Mode == SnipMode.Rectangle);
         Highlight(FreeformButton, _session.Mode == SnipMode.Freeform);
+        var freeform = _session.Kind != CaptureKind.Gif;
+        FreeformButton.IsEnabled = freeform;
+        FreeformButton.Opacity = freeform ? 1 : 0.35;
         Highlight(WindowButton, _session.Mode == SnipMode.Window);
     }
 
     private static void Highlight(Button button, bool on)
     {
-        button.Background = on
-            ? new SolidColorBrush(Color.FromArgb(255, 59, 130, 246))
-            : Brushes.Transparent;
+        button.Tag = on ? "on" : null;
     }
 
     private void Redraw()
@@ -400,6 +430,7 @@ public partial class OverlayWindow : Window
     private void OnClosed(object? sender, EventArgs e)
     {
         _session.ModeChanged -= OnModeChanged;
+        _session.KindChanged -= OnKindChanged;
         _freeze.Dispose();
     }
 }

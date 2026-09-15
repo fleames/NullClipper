@@ -32,7 +32,7 @@ public sealed class SettingsStore
             {
                 var json = File.ReadAllText(_path);
                 Current = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
-                Current.MigrateLegacyHotkey();
+                Current.Normalize();
             }
         }
         catch

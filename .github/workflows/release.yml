@@ -71,5 +71,8 @@ jobs:
 
             ### What's inside
             - Tray snipping tool for Windows
+            - Snip or GIF from the overlay toolbar
             - Region, freeform, window, and fullscreen capture
-            - Optional NullImage encrypted share links
+            - Premium toast with a thumbnail after each capture
+            - Settings minimizes to the tray (no title-bar close)
+            - Optional NullImage encrypted share links (1 hour to 7 days)
