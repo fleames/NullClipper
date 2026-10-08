@@ -1,0 +1,30 @@
+/* Page-level chrome for options.html. Component styles (.card, .field,
+   .switch, .rule, etc.) come from popup.css, loaded first — this file only
+   overrides the popup's fixed 400px popup width with a normal page layout,
+   since an options page is a full tab/window, not a size-constrained
+   browser-action popup. */
+
+body.options-body {
+  width: auto;
+  min-height: 100vh;
+}
+
+.options-page {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.options-content {
+  padding: 20px 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.options-footnote {
+  margin: 4px 2px 0;
+}
+
+.status {
+  padding: 0 2px;
+}

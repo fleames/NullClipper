@@ -3,7 +3,6 @@ import { loadSettings, saveSettings, serverOriginPattern } from './lib/settings.
 const statusEl = document.getElementById('status');
 const niOptions = document.getElementById('ni-options');
 const niEnabledSwitch = document.getElementById('ni-enabled-switch');
-const niBurnSwitch = document.getElementById('ni-burn-switch');
 const captureTitle = document.getElementById('capture-title');
 const captureSub = document.getElementById('capture-sub');
 const modeHint = document.getElementById('mode-hint');
@@ -59,7 +58,7 @@ async function requestServerPermission(serverUrl) {
     const origin = serverOriginPattern(serverUrl);
     return chrome.permissions.request({ origins: [origin] });
   } catch {
-    setStatus('Enter a valid NullImage server URL (https://…).');
+    setStatus('Enter a valid NullImage server URL (https://…) in Settings.');
     return false;
   }
 }
@@ -69,10 +68,29 @@ async function init() {
   applyMode(settings.captureMode);
   setSwitch(niEnabledSwitch, settings.nullImageEnabled);
   niOptions.classList.toggle('hidden', !settings.nullImageEnabled);
-  document.getElementById('ni-server').value = settings.nullImageServerUrl;
-  document.getElementById('ni-expiry').value = settings.nullImageExpiry;
-  setSwitch(niBurnSwitch, settings.nullImageBurnAfterView);
-  document.getElementById('ni-password').value = settings.nullImagePassword;
+
+  // chrome.permissions.request() (below) opens a native prompt that steals
+  // focus — Chromium tears down this popup's document the instant that
+  // happens, killing the in-flight click handler before it reaches any code
+  // after the request call. That's the exact bug reported: toggling the
+  // switch on never actually persisted, because the save used to happen
+  // *after* requestServerPermission. Two defenses now: the save below moved
+  // *before* the permission request (so a grant always persists even if the
+  // popup dies the instant the prompt appears), and this self-heal, which
+  // catches the other half — a stored "enabled: true" left over from a
+  // previous attempt the user actually denied (the rollback on denial, a
+  // few lines down, is just as vulnerable to the same popup-teardown race).
+  if (settings.nullImageEnabled) {
+    const hasPermission = await chrome.permissions.contains({
+      origins: [serverOriginPattern(settings.nullImageServerUrl)],
+    }).catch(() => false);
+    if (!hasPermission) {
+      settings.nullImageEnabled = false;
+      setSwitch(niEnabledSwitch, false);
+      niOptions.classList.add('hidden');
+      await saveSettings({ nullImageEnabled: false });
+    }
+  }
 
   const commands = await chrome.commands.getAll();
   const capture = commands.find((item) => item.name === 'start-capture');
@@ -89,47 +107,29 @@ async function init() {
 
   document.getElementById('ni-enabled').addEventListener('click', async () => {
     const next = !niEnabledSwitch.classList.contains('on');
+
+    // Update the UI and persist first — see the long comment in init()
+    // above for why this has to happen before requestServerPermission,
+    // not after.
+    setSwitch(niEnabledSwitch, next);
+    niOptions.classList.toggle('hidden', !next);
+    const saved = await saveSettings({ nullImageEnabled: next });
+
     if (next) {
-      const serverUrl = document.getElementById('ni-server').value;
-      const granted = await requestServerPermission(serverUrl);
+      const granted = await requestServerPermission(saved.nullImageServerUrl);
       if (!granted) {
+        setSwitch(niEnabledSwitch, false);
+        niOptions.classList.add('hidden');
+        await saveSettings({ nullImageEnabled: false });
         setStatus('NullImage needs permission for that server origin.');
         return;
       }
     }
-    setSwitch(niEnabledSwitch, next);
-    niOptions.classList.toggle('hidden', !next);
-    await saveSettings({ nullImageEnabled: next });
     setStatus('');
   });
 
-  document.getElementById('ni-burn').addEventListener('click', async () => {
-    const next = !niBurnSwitch.classList.contains('on');
-    setSwitch(niBurnSwitch, next);
-    await saveSettings({ nullImageBurnAfterView: next });
-  });
-
-  document.getElementById('ni-server').addEventListener('change', async (event) => {
-    const serverUrl = event.target.value.trim();
-    const saved = await saveSettings({ nullImageServerUrl: serverUrl });
-    event.target.value = saved.nullImageServerUrl;
-    if (niEnabledSwitch.classList.contains('on')) {
-      const granted = await requestServerPermission(saved.nullImageServerUrl);
-      if (!granted) setStatus('Grant host permission for that NullImage origin, or uploads will fail.');
-      else setStatus('');
-    }
-  });
-
-  document.getElementById('ni-expiry').addEventListener('change', async (event) => {
-    await saveSettings({ nullImageExpiry: event.target.value });
-  });
-
-  let passwordTimer = 0;
-  document.getElementById('ni-password').addEventListener('input', (event) => {
-    clearTimeout(passwordTimer);
-    passwordTimer = setTimeout(() => {
-      saveSettings({ nullImagePassword: event.target.value });
-    }, 250);
+  document.getElementById('ni-open-settings').addEventListener('click', () => {
+    chrome.runtime.openOptionsPage();
   });
 
   document.getElementById('capture').addEventListener('click', async () => {

@@ -49,11 +49,9 @@
             <p class="hint" id="mode-hint">
               GIF records a region at 12 fps for up to 8s. Longest side capped at 640px.
             </p>
-          </div>
-        </section>
 
-        <section class="card">
-          <div class="card-inner">
+            <div class="rule"></div>
+
             <div class="label">HOTKEY</div>
             <div class="hotkey-box" id="hotkey-chips"></div>
             <p class="hint">
@@ -86,36 +84,10 @@
 
             <div id="ni-options">
               <div class="rule"></div>
-              <div class="label">SERVER</div>
-              <input
-                id="ni-server"
-                class="field"
-                type="url"
-                spellcheck="false"
-                placeholder="https://nullimage.org"
-              />
-              <div class="rule"></div>
-              <div class="label">EXPIRES</div>
-              <select id="ni-expiry" class="select">
-                <option value="1h">1 hour</option>
-                <option value="1d">1 day</option>
-                <option value="3d">3 days</option>
-                <option value="7d">7 days</option>
-              </select>
-              <div class="rule"></div>
-              <button id="ni-burn" class="switch-row" type="button" style="padding: 0">
-                <span>Burn after first view</span>
-                <span class="switch" id="ni-burn-switch"></span>
+              <button id="ni-open-settings" class="switch-row" type="button" style="padding: 0">
+                <span>Server, expiry, password…</span>
+                <span class="chip-plus" aria-hidden="true">›</span>
               </button>
-              <div class="rule"></div>
-              <div class="label">PASSWORD</div>
-              <input
-                id="ni-password"
-                class="field"
-                type="password"
-                autocomplete="off"
-                placeholder="Optional — protects each upload"
-              />
             </div>
           </div>
         </section>

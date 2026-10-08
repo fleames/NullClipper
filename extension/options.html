@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NullClipper settings</title>
+    <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body class="options-body">
+    <div class="options-page">
+      <header class="titlebar">
+        <div class="brand-icon">
+          <img src="icons/clipper-icon.png" alt="" />
+        </div>
+        <div class="brand">NullClipper settings</div>
+      </header>
+
+      <div class="options-content">
+        <section class="card">
+          <div class="card-inner">
+            <div class="ni-head">
+              <div class="ni-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <rect x="2" y="2" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.3" />
+                  <rect x="8" y="8" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.3" />
+                </svg>
+              </div>
+              <div>
+                <div class="ni-title">NullImage</div>
+                <div class="ni-sub">Encrypted snips with a shareable link.</div>
+              </div>
+            </div>
+
+            <button id="ni-enabled" class="switch-row" type="button" style="padding: 0">
+              <span>Enable NullImage uploads</span>
+              <span class="switch" id="ni-enabled-switch"></span>
+            </button>
+
+            <div id="ni-options">
+              <div class="rule"></div>
+              <div class="label">SERVER</div>
+              <input
+                id="ni-server"
+                class="field"
+                type="url"
+                spellcheck="false"
+                placeholder="https://nullimage.org"
+              />
+              <div class="rule"></div>
+              <div class="label">EXPIRES</div>
+              <select id="ni-expiry" class="select">
+                <option value="1h">1 hour</option>
+                <option value="1d">1 day</option>
+                <option value="3d">3 days</option>
+                <option value="7d">7 days</option>
+              </select>
+              <div class="rule"></div>
+              <button id="ni-burn" class="switch-row" type="button" style="padding: 0">
+                <span>Burn after first view</span>
+                <span class="switch" id="ni-burn-switch"></span>
+              </button>
+              <div class="rule"></div>
+              <div class="label">PASSWORD</div>
+              <input
+                id="ni-password"
+                class="field"
+                type="password"
+                autocomplete="off"
+                placeholder="Optional — protects each upload"
+              />
+            </div>
+          </div>
+        </section>
+
+        <p class="hint options-footnote">
+          Settings save instantly and apply the next time you capture from the NullClipper popup.
+        </p>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

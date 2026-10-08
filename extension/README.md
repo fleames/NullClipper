@@ -58,7 +58,7 @@ If a NullImage upload fails, the image or GIF is copied instead.
 
 ## NullImage
 
-Off until you enable it. Settings: server URL (default `https://nullimage.org`), expiry **1 hour / 1 day / 3 days / 7 days** (no “never”), burn after first view, optional password.
+Off until you enable it — the popup's **Enable NullImage uploads** switch. The rest (server URL, default `https://nullimage.org`; expiry **1 hour / 1 day / 3 days / 7 days**, no “never”; burn after first view; optional password) lives on the settings page via **Server, expiry, password…** in the popup, or the extension's **Options** entry in `chrome://extensions`.
 
 The browser will prompt for host permission for that origin so the service worker can POST/PUT without CORS. The key never leaves the `#fragment` of the share URL.
 
@@ -77,6 +77,10 @@ extension/
   manifest.json
   pack.ps1                 builds dist/NullClipper-extension.zip
   popup.html / popup.css / popup.js
+  options.html / options.css / options.js
+                           NullImage server/expiry/password — kept out of
+                           the popup so it stays short enough to never
+                           need its own scrollbar
   background.js            service worker
   overlay.html / overlay.js / overlay.css
                            extension-owned crop UI (not injected)
