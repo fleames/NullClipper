@@ -9,8 +9,6 @@ namespace Clipper.Services;
 
 public static class ClipboardService
 {
-    private static Drawing.Bitmap? _keepAlive;
-
     [DllImport("ole32.dll")]
     private static extern int OleFlushClipboard();
 
@@ -20,11 +18,8 @@ public static class ClipboardService
         using var dib = To24Bpp(source);
         using var pngStream = new MemoryStream(pngBytes);
 
-        _keepAlive?.Dispose();
-        _keepAlive = (Drawing.Bitmap)dib.Clone();
-
         var data = new Forms.DataObject();
-        data.SetImage(_keepAlive);
+        data.SetImage(dib);
         data.SetData("PNG", false, pngStream);
 
         Exception? last = null;
@@ -52,11 +47,9 @@ public static class ClipboardService
     public static void CopyGif(byte[] gifBytes, Drawing.Bitmap previewFrame)
     {
         using var dib = To24Bpp(previewFrame);
-        _keepAlive?.Dispose();
-        _keepAlive = (Drawing.Bitmap)dib.Clone();
 
         var data = new Forms.DataObject();
-        data.SetImage(_keepAlive);
+        data.SetImage(dib);
         data.SetData("GIF", false, new MemoryStream(gifBytes));
         data.SetData("image/gif", false, new MemoryStream(gifBytes));
 
@@ -84,7 +77,8 @@ public static class ClipboardService
         throw last ?? new InvalidOperationException("The GIF could not be copied to the clipboard.");
     }
 
-    public static BitmapSource Preview(Drawing.Bitmap bitmap) => ScreenCaptureService.ToBitmapSource(bitmap);
+    public static BitmapSource Preview(Drawing.Bitmap bitmap) =>
+        ScreenCaptureService.ToDownscaledBitmapSource(bitmap, ScreenCaptureService.ToastPreviewMaxEdge);
 
     public static void CopyText(string text)
     {
@@ -119,6 +113,11 @@ public static class ClipboardService
 
     private static Drawing.Bitmap To24Bpp(Drawing.Bitmap source)
     {
+        if (source.PixelFormat == DrawingImaging.PixelFormat.Format24bppRgb)
+        {
+            return (Drawing.Bitmap)source.Clone();
+        }
+
         var copy = new Drawing.Bitmap(source.Width, source.Height, DrawingImaging.PixelFormat.Format24bppRgb);
         using var graphics = Drawing.Graphics.FromImage(copy);
         graphics.Clear(Drawing.Color.White);

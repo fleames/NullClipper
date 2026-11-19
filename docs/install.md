@@ -1,13 +1,12 @@
 # Install NullClipper
 
-True one-click browser install is the Chrome Web Store / Edge Add-ons / Opera add-ons listing. Those listings are **not live yet** — Chromium will not 1-click-install an unpacked GitHub zip.
+One-click browser install is the **Chrome Web Store** or **Opera add-ons** listing. **Edge Add-ons is not live yet** — Chromium will not 1-click-install an unpacked GitHub zip, so use Developer mode there.
 
-**Submit to stores:** the MV3 zip, listing copy, privacy policy, and 1280×800 screenshots are in [`store/`](../store/). Follow [`store/PUBLISH.md`](../store/PUBLISH.md) (Chrome $5 fee, then Edge import, then Opera). Until a listing is approved, use Developer mode below.
+**Publishing the remaining store:** the MV3 zip, listing copy, privacy policy, and 1280×800 screenshots are in [`store/`](../store/). Follow [`store/PUBLISH.md`](../store/PUBLISH.md).
 
-<!-- Store badges: replace TBD URLs after each listing is approved. Do not point these at fake live store pages. -->
-[![Chrome Web Store](https://img.shields.io/badge/Chrome-Coming_soon-9ca3af?style=flat-square&logo=googlechrome&logoColor=white)](#chrome)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome-Web_Store-4285F4?style=flat-square&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/nullclipper/epfnlcdfgpobfagfoeghabmdbbjoohck)
 [![Edge Add-ons](https://img.shields.io/badge/Edge-Coming_soon-9ca3af?style=flat-square&logo=microsoftedge&logoColor=white)](#edge)
-[![Opera add-ons](https://img.shields.io/badge/Opera-Coming_soon-9ca3af?style=flat-square&logo=opera&logoColor=white)](#opera)
+[![Opera add-ons](https://img.shields.io/badge/Opera-add--ons-FF1B2D?style=flat-square&logo=opera&logoColor=white)](https://addons.opera.com/extensions/details/nullclipper/)
 
 ## Windows (desktop app)
 
@@ -43,9 +42,9 @@ Same as Chrome, using `edge://extensions` and `edge://extensions/shortcuts`.
 
 Opera (and some Chromium policies) blocks **scripting** web pages for unpacked/sideloaded extensions (`ExtensionsSettings`). NullClipper does **not** inject into Google or any other site — it snapshots the tab and crops on an extension page — so Opera can capture google.com.
 
-**When the Opera add-ons listing is live:** that is the real 1-click install.
+**Opera add-ons is live** — [install from the store](https://addons.opera.com/extensions/details/nullclipper/) for the real 1-click path.
 
-**Until then (Developer mode):**
+**Sideload (Developer mode):**
 
 1. Unzip `NullClipper-extension.zip` to a folder you will keep.
 2. Open `opera://extensions` (or `chrome://extensions`).

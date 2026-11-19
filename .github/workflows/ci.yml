@@ -18,6 +18,10 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Versions agree across VERSION, Clipper.csproj and extension/manifest.json
+        shell: pwsh
+        run: ./scripts/stamp-version.ps1 -Check
+
       - name: Build
         run: dotnet build Clipper.csproj -c Release --nologo
 

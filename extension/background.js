@@ -601,7 +601,7 @@ async function toastSnipResult({
 async function recordGif(tab, rect, viewport) {
   stopGif = false;
   state = 'gif';
-  const encoder = new GifEncoder({ delayCs: Math.round(100 / GIF_FPS) });
+  const encoder = new GifEncoder({ delayCs: Math.max(2, Math.round(100 / GIF_FPS)) });
   const interval = 1000 / GIF_FPS;
   const deadline = Date.now() + GIF_MAX_SECONDS * 1000;
   let target = null;

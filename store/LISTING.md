@@ -27,7 +27,7 @@ It is the browser companion to the Windows tray app of the same name. The extens
 
 1. Pin NullClipper and click the icon, or press Alt+Shift+X (change the shortcut in the browser’s extension shortcuts page).
 2. Drag a rectangle on the freeze-frame, or capture the full visible tab.
-3. Snip copies a PNG. GIF records that region at 12 fps for up to 8 seconds (longest side capped at 640px).
+3. Snip copies a PNG. GIF records that region at ~2 fps for up to 8 seconds (longest side capped at 640px). The browser's tab-capture API only allows two snapshots a second, so the in-browser GIF is a slow, small loop — the Windows app records the same region at 12 fps.
 4. Esc or the close button cancels.
 
 Cropping happens in an extension window. NullClipper does **not** inject scripts into the website, so it can still capture normal https pages in Opera (unpacked/sideload is otherwise limited by ExtensionsSettings).

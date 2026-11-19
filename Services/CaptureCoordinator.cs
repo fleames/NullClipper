@@ -186,6 +186,7 @@ public sealed class CaptureCoordinator
         {
             try
             {
+                overlay.ReleaseResources();
                 overlay.Hide();
                 overlay.Close();
             }
@@ -194,6 +195,8 @@ public sealed class CaptureCoordinator
                 // Overlay may already be closing.
             }
         }
+
+        TrimCaptureMemory();
     }
 
     private void DetachSession()
@@ -258,6 +261,7 @@ public sealed class CaptureCoordinator
             }
 
             _busy = false;
+            TrimCaptureMemory();
         }
     }
 
@@ -278,6 +282,7 @@ public sealed class CaptureCoordinator
         finally
         {
             capture.Dispose();
+            TrimCaptureMemory();
         }
     }
 
@@ -319,6 +324,7 @@ public sealed class CaptureCoordinator
         finally
         {
             result.Preview.Dispose();
+            TrimCaptureMemory();
         }
     }
 
@@ -363,5 +369,18 @@ public sealed class CaptureCoordinator
                     ?? _overlays[0];
         match.Activate();
         match.Focus();
+    }
+
+    private static void TrimCaptureMemory()
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            return;
+        }
+
+        dispatcher.BeginInvoke(
+            () => GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, blocking: false),
+            DispatcherPriority.ApplicationIdle);
     }
 }

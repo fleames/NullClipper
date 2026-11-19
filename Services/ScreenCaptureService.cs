@@ -3,6 +3,7 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Clipper.Native;
 using Drawing = System.Drawing;
+using Drawing2D = System.Drawing.Drawing2D;
 using DrawingImaging = System.Drawing.Imaging;
 using Forms = System.Windows.Forms;
 
@@ -10,13 +11,21 @@ namespace Clipper.Services;
 
 public static class ScreenCaptureService
 {
+    // The overlay draws a frozen screenshot stretched across the monitor, so a
+    // 1280px cap looks visibly soft on a 1080p display (1.5x upscale) — and the
+    // freeze is the one thing a user judges the capture by. 2560 keeps 1080p and
+    // 1440p pixel-exact and only softens 4K. Coordinates are mapped against the
+    // full-resolution frame either way, so capture output is unaffected.
+    public const int OverlayPreviewMaxEdge = 2560;
+    public const int ToastPreviewMaxEdge = 240;
+
     public static Drawing.Bitmap Capture(Forms.Screen screen) => CaptureRect(screen.Bounds);
 
     public static Drawing.Bitmap CaptureRect(Drawing.Rectangle virtualRect)
     {
         var width = Math.Max(1, virtualRect.Width);
         var height = Math.Max(1, virtualRect.Height);
-        var bitmap = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format32bppArgb);
+        var bitmap = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format24bppRgb);
         using var graphics = Drawing.Graphics.FromImage(bitmap);
         try
         {
@@ -39,7 +48,7 @@ public static class ScreenCaptureService
         width = Math.Min(width, source.Width - x);
         height = Math.Min(height, source.Height - y);
 
-        var cropped = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format32bppArgb);
+        var cropped = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format24bppRgb);
         using var graphics = Drawing.Graphics.FromImage(cropped);
         graphics.DrawImage(
             source,
@@ -68,13 +77,36 @@ public static class ScreenCaptureService
         }
     }
 
+    public static BitmapSource ToDownscaledBitmapSource(Drawing.Bitmap bitmap, int maxEdge)
+    {
+        var longEdge = Math.Max(bitmap.Width, bitmap.Height);
+        if (longEdge <= maxEdge)
+        {
+            return ToBitmapSource(bitmap);
+        }
+
+        var scale = maxEdge / (double)longEdge;
+        var width = Math.Max(1, (int)Math.Round(bitmap.Width * scale));
+        var height = Math.Max(1, (int)Math.Round(bitmap.Height * scale));
+        using var preview = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format24bppRgb);
+        using (var graphics = Drawing.Graphics.FromImage(preview))
+        {
+            graphics.InterpolationMode = Drawing2D.InterpolationMode.Low;
+            graphics.PixelOffsetMode = Drawing2D.PixelOffsetMode.HighSpeed;
+            graphics.CompositingQuality = Drawing2D.CompositingQuality.HighSpeed;
+            graphics.DrawImage(bitmap, 0, 0, width, height);
+        }
+
+        return ToBitmapSource(preview);
+    }
+
     public static Drawing.Bitmap CropFromScreens(
         IReadOnlyList<(Drawing.Rectangle Bounds, Drawing.Bitmap Freeze)> frames,
         Drawing.Rectangle virtualRect)
     {
         var width = Math.Max(1, virtualRect.Width);
         var height = Math.Max(1, virtualRect.Height);
-        var result = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format32bppArgb);
+        var result = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format24bppRgb);
         using var graphics = Drawing.Graphics.FromImage(result);
         graphics.Clear(Drawing.Color.Black);
 

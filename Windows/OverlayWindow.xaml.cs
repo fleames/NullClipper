@@ -21,6 +21,7 @@ public partial class OverlayWindow : Window
     private Rect _selection;
     private Drawing.Rectangle? _hoverWindow;
     private bool _closed;
+    private bool _released;
 
     public event Action<Drawing.Rectangle>? RectCaptured;
     public event Action<Drawing.Bitmap>? ImageCaptured;
@@ -34,7 +35,9 @@ public partial class OverlayWindow : Window
         ScreenBounds = screen.Bounds;
         _freeze = freeze;
         _session = session;
-        FrozenImage.Source = ScreenCaptureService.ToBitmapSource(freeze);
+        FrozenImage.Source = ScreenCaptureService.ToDownscaledBitmapSource(
+            freeze,
+            ScreenCaptureService.OverlayPreviewMaxEdge);
         DimPath.Data = new RectangleGeometry(new Rect(0, 0, screen.Bounds.Width, screen.Bounds.Height));
 
         SourceInitialized += OnSourceInitialized;
@@ -427,10 +430,22 @@ public partial class OverlayWindow : Window
             : new CombinedGeometry(GeometryCombineMode.Exclude, full, hole);
     }
 
-    private void OnClosed(object? sender, EventArgs e)
+    public void ReleaseResources()
     {
+        if (_released)
+        {
+            return;
+        }
+
+        _released = true;
         _session.ModeChanged -= OnModeChanged;
         _session.KindChanged -= OnKindChanged;
+        RectCaptured = null;
+        ImageCaptured = null;
+        Cancelled = null;
+        FrozenImage.Source = null;
         _freeze.Dispose();
     }
+
+    private void OnClosed(object? sender, EventArgs e) => ReleaseResources();
 }

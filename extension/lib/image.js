@@ -1,4 +1,12 @@
-export const GIF_FPS = 12;
+/**
+ * Chrome throttles `chrome.tabs.captureVisibleTab` to
+ * `chrome.tabs.MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND` (2). Pacing above that
+ * throws "This request exceeds the MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND
+ * quota" and the recorder's `catch { break; }` ends the clip after two frames.
+ * 12 fps produced a ~0.25s, two-frame GIF on every recording, so the honest
+ * ceiling for this API is 2 fps. Going faster needs chrome.tabCapture, not this.
+ */
+export const GIF_FPS = 2;
 export const GIF_MAX_SECONDS = 8;
 export const GIF_MAX_LONG_EDGE = 640;
 

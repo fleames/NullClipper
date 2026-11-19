@@ -126,7 +126,7 @@
     <Grid>
         <Image x:Name="FrozenImage"
                Stretch="Fill"
-               RenderOptions.BitmapScalingMode="NearestNeighbor"
+               RenderOptions.BitmapScalingMode="LowQuality"
                RenderOptions.EdgeMode="Aliased"/>
         <Path x:Name="DimPath" Fill="#99000000"/>
         <Canvas x:Name="SelectionCanvas" IsHitTestVisible="False">

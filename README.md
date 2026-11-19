@@ -20,11 +20,12 @@
   <a href="https://github.com/fleames/NullClipper/releases/latest"><strong>Download NullClipper-Setup.exe</strong></a>
   · or <a href="https://github.com/fleames/NullClipper/releases/latest">NullClipper-win-x64.zip</a>
   · Windows 10/11 x64 · requires <a href="https://dotnet.microsoft.com/download/dotnet/8.0">.NET 8 Desktop Runtime</a>
+  · <a href="https://nullclipper.org">nullclipper.org</a>
 </p>
 <p align="center">
-  <a href="docs/install.md"><img src="https://img.shields.io/badge/Chrome-Coming_soon-9ca3af?style=flat-square&logo=googlechrome&logoColor=white" alt="Chrome Web Store coming soon"></a>
+  <a href="https://chromewebstore.google.com/detail/nullclipper/epfnlcdfgpobfagfoeghabmdbbjoohck"><img src="https://img.shields.io/badge/Chrome-Web_Store-4285F4?style=flat-square&logo=googlechrome&logoColor=white" alt="Chrome Web Store"></a>
   <a href="docs/install.md"><img src="https://img.shields.io/badge/Edge-Coming_soon-9ca3af?style=flat-square&logo=microsoftedge&logoColor=white" alt="Edge Add-ons coming soon"></a>
-  <a href="docs/install.md"><img src="https://img.shields.io/badge/Opera-Coming_soon-9ca3af?style=flat-square&logo=opera&logoColor=white" alt="Opera add-ons coming soon"></a>
+  <a href="https://addons.opera.com/extensions/details/nullclipper/"><img src="https://img.shields.io/badge/Opera-add--ons-FF1B2D?style=flat-square&logo=opera&logoColor=white" alt="Opera add-ons"></a>
 </p>
 
 ---
@@ -74,7 +75,7 @@ The app lives in the tray. Look for the scissors-and-link icon near the clock, o
 
 ### Browser extension (Chrome / Edge / Opera)
 
-Store listings are **coming soon** — Chromium will not 1-click-install a GitHub zip. Listing kit: [`store/`](store/) ([how to publish](store/PUBLISH.md)). Until then:
+**Chrome Web Store** and **Opera add-ons** install in one click. Edge is not listed yet, and Chromium will not 1-click-install a GitHub zip — for Edge, use Developer mode below. Listing kit: [`store/`](store/) ([how to publish](store/PUBLISH.md)).
 
 1. Download **`NullClipper-extension.zip`** from the [latest Release](https://github.com/fleames/NullClipper/releases/latest).
 2. Unzip it to a folder you will keep.

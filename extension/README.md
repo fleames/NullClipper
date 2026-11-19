@@ -47,7 +47,7 @@ If the shortcut field is empty, the browser refused the default because another 
 | --- | --- | --- |
 | Region snip | Visible area of the **current tab** | Any monitor / window |
 | Full capture | Full **visible tab** | Fullscreen monitor |
-| GIF | Region of the tab, ~12 fps, max 8s, 640px long-edge cap | Same limits, any screen region |
+| GIF | Region of the tab, ~2 fps, max 8s, 640px long-edge cap | 12 fps, any screen region |
 | Clipboard | PNG (GIF when Chromium accepts `image/gif`) | PNG / GIF via the Windows clipboard |
 | NullImage | Same `ni1-aes-gcm-256` scheme, AES-256-GCM, 2 MiB chunks, `#k=` fragment | Same |
 | Hotkey | `chrome.commands` | Global OS hotkey |

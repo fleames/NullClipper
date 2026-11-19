@@ -37,6 +37,10 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
           Write-Host "Publishing $tag ($version)"
 
+      - name: Stamp the tag's version into VERSION, Clipper.csproj and extension/manifest.json
+        shell: pwsh
+        run: ./scripts/stamp-version.ps1 -Version ${{ steps.version.outputs.version }}
+
       - name: Publish win-x64 (framework-dependent)
         run: >
           dotnet publish Clipper.csproj
@@ -85,8 +89,9 @@ jobs:
             Requires the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) for Windows x64.
 
             ### Browser extension (Chrome / Edge / Opera)
-            Download **NullClipper-extension.zip**, unzip, then Load unpacked in Developer mode.
-            Store listings (true 1-click) are not live yet.
+            **Chrome Web Store** and **Opera add-ons** — one click. Edge is not listed yet: download **NullClipper-extension.zip**, unzip, and Load unpacked in Developer mode.
+
+            In-browser GIFs run at ~2 fps: the browser allows only two tab snapshots a second. The Windows app records the same region at 12 fps.
 
             Opera: sideload still needs Developer mode; the extension does not inject into pages, so google.com captures work.
 

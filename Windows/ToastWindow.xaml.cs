@@ -112,6 +112,7 @@ public partial class ToastWindow : Window
     private void CloseQuietly()
     {
         _dismiss.Stop();
+        PreviewImage.Source = null;
         try
         {
             Close();

@@ -24,7 +24,7 @@ function applyMode(mode) {
     ? 'Region of this tab, up to 8 seconds'
     : 'Current tab — region or full view';
   modeHint.textContent = gif
-    ? 'GIF records a region at 12 fps for up to 8s. Longest side capped at 640px.'
+    ? 'GIF records a region at ~2 fps for up to 8s. Longest side capped at 640px.'
     : 'Snip copies a still image. Switch to GIF to record a short clip of the same region.';
 }
 

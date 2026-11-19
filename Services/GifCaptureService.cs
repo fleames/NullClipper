@@ -26,78 +26,94 @@ public static class GifCaptureService
         Action? onEncoding,
         CancellationToken cancellationToken)
     {
-        var frames = new List<Drawing.Bitmap>();
+        var path = Path.Combine(Path.GetTempPath(), $"nullclipper-{Guid.NewGuid():N}.gif");
         var interval = TimeSpan.FromMilliseconds(1000.0 / GifLimits.Fps);
         var max = TimeSpan.FromSeconds(GifLimits.MaxDurationSeconds);
+        var delay = (int)Math.Round(1000.0 / GifLimits.Fps);
         var clock = Stopwatch.StartNew();
+        Drawing.Bitmap? preview = null;
+        var frameCount = 0;
 
         try
         {
-            while (clock.Elapsed < max)
+            using (var gif = new AnimatedGifCreator(path, delay))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                var frameClock = Stopwatch.StartNew();
-
-                if (beforeFrame is not null)
-                {
-                    await beforeFrame().ConfigureAwait(true);
-                }
-
-                Drawing.Bitmap? raw = null;
                 try
                 {
-                    raw = ScreenCaptureService.CaptureRect(region);
-                    frames.Add(ScaleIfNeeded(raw));
-                    raw = null;
-                }
-                finally
-                {
-                    raw?.Dispose();
-                    if (afterFrame is not null)
+                    while (clock.Elapsed < max)
                     {
-                        await afterFrame().ConfigureAwait(true);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var frameClock = Stopwatch.StartNew();
+
+                        if (beforeFrame is not null)
+                        {
+                            await beforeFrame().ConfigureAwait(true);
+                        }
+
+                        Drawing.Bitmap? frame = null;
+                        try
+                        {
+                            frame = ScaleIfNeeded(ScreenCaptureService.CaptureRect(region));
+                            preview ??= (Drawing.Bitmap)frame.Clone();
+                            gif.AddFrame(frame, delay, GifQuality.Bit8);
+                            frameCount++;
+                        }
+                        finally
+                        {
+                            frame?.Dispose();
+                            if (afterFrame is not null)
+                            {
+                                await afterFrame().ConfigureAwait(true);
+                            }
+                        }
+
+                        onElapsed?.Invoke(clock.Elapsed);
+
+                        var wait = interval - frameClock.Elapsed;
+                        if (wait > TimeSpan.Zero)
+                        {
+                            await Task.Delay(wait, cancellationToken).ConfigureAwait(true);
+                        }
                     }
                 }
-
-                onElapsed?.Invoke(clock.Elapsed);
-
-                var wait = interval - frameClock.Elapsed;
-                if (wait > TimeSpan.Zero)
+                catch (OperationCanceledException)
                 {
-                    await Task.Delay(wait, cancellationToken).ConfigureAwait(true);
+                    // Stop / Esc — keep whatever was already encoded.
                 }
             }
-        }
-        catch (OperationCanceledException)
-        {
-            // Stop / Esc — encode whatever we have.
-        }
 
-        onElapsed?.Invoke(clock.Elapsed);
-        if (frames.Count == 0)
-        {
-            return null;
-        }
+            onElapsed?.Invoke(clock.Elapsed);
+            if (frameCount == 0)
+            {
+                preview?.Dispose();
+                preview = null;
+                return null;
+            }
 
-        onEncoding?.Invoke();
-        byte[] bytes;
-        try
+            onEncoding?.Invoke();
+            var bytes = await Task.Run(() => File.ReadAllBytes(path), CancellationToken.None).ConfigureAwait(true);
+            var resultPreview = preview;
+            preview = null;
+            return new GifCaptureResult(bytes, resultPreview!, resultPreview!.Width, resultPreview.Height, frameCount);
+        }
+        catch
         {
-            bytes = await Task.Run(() => Encode(frames), CancellationToken.None).ConfigureAwait(true);
+            preview?.Dispose();
+            preview = null;
+            throw;
         }
         finally
         {
-            // Preview is cloned before dispose below.
+            preview?.Dispose();
+            try
+            {
+                File.Delete(path);
+            }
+            catch
+            {
+                // Temp cleanup is best-effort.
+            }
         }
-
-        var frameCount = frames.Count;
-        var preview = (Drawing.Bitmap)frames[0].Clone();
-        foreach (var frame in frames)
-        {
-            frame.Dispose();
-        }
-
-        return new GifCaptureResult(bytes, preview, preview.Width, preview.Height, frameCount);
     }
 
     private static Drawing.Bitmap ScaleIfNeeded(Drawing.Bitmap source)
@@ -122,7 +138,7 @@ public static class GifCaptureService
             return source;
         }
 
-        var scaled = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format32bppArgb);
+        var scaled = new Drawing.Bitmap(width, height, DrawingImaging.PixelFormat.Format24bppRgb);
         using (var graphics = Drawing.Graphics.FromImage(scaled))
         {
             graphics.InterpolationMode = Drawing2D.InterpolationMode.HighQualityBicubic;
@@ -132,34 +148,5 @@ public static class GifCaptureService
 
         source.Dispose();
         return scaled;
-    }
-
-    private static byte[] Encode(IReadOnlyList<Drawing.Bitmap> frames)
-    {
-        var path = Path.Combine(Path.GetTempPath(), $"nullclipper-{Guid.NewGuid():N}.gif");
-        try
-        {
-            var delay = (int)Math.Round(1000.0 / GifLimits.Fps);
-            using (var gif = new AnimatedGifCreator(path, delay))
-            {
-                foreach (var frame in frames)
-                {
-                    gif.AddFrame(frame, delay, GifQuality.Bit8);
-                }
-            }
-
-            return File.ReadAllBytes(path);
-        }
-        finally
-        {
-            try
-            {
-                File.Delete(path);
-            }
-            catch
-            {
-                // Temp cleanup is best-effort.
-            }
-        }
     }
 }
