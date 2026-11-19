@@ -44,6 +44,8 @@ public sealed class AppSettings
 
     public bool IsGifMode => string.Equals(CaptureMode, "gif", StringComparison.OrdinalIgnoreCase);
 
+    public bool IsRedactMode => string.Equals(CaptureMode, "redact", StringComparison.OrdinalIgnoreCase);
+
     public HotkeyBinding Hotkey => new(HotkeyModifiers, HotkeyVirtualKey);
 
     public void SetHotkey(HotkeyBinding binding)
@@ -69,7 +71,7 @@ public sealed class AppSettings
     public void Normalize()
     {
         MigrateLegacyHotkey();
-        if (!IsGifMode)
+        if (!IsGifMode && !IsRedactMode)
         {
             CaptureMode = "snip";
         }

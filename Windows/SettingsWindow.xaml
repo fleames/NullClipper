@@ -560,6 +560,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <RadioButton x:Name="SnipModeButton"
                                              Style="{StaticResource SegmentRadio}"
@@ -572,6 +573,12 @@
                                              Content="GIF"
                                              GroupName="CaptureKind"
                                              Click="OnGifMode"/>
+                                <RadioButton x:Name="RedactModeButton"
+                                             Grid.Column="2"
+                                             Style="{StaticResource SegmentRadio}"
+                                             Content="Redact"
+                                             GroupName="CaptureKind"
+                                             Click="OnRedactMode"/>
                             </Grid>
                         </Border>
                         <TextBlock x:Name="CaptureModeHint"

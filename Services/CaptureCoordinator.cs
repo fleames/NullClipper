@@ -97,7 +97,12 @@ public sealed class CaptureCoordinator
     {
         var completed = false;
         _session = new CaptureSession();
-        _session.SetKind(_settings.Current.IsGifMode ? CaptureKind.Gif : CaptureKind.Snip);
+        _session.SetKind(_settings.Current.CaptureMode.ToLowerInvariant() switch
+        {
+            "gif" => CaptureKind.Gif,
+            "redact" => CaptureKind.Redact,
+            _ => CaptureKind.Snip
+        });
         _session.KindChanged += OnSessionKindChanged;
 
         try
@@ -227,7 +232,12 @@ public sealed class CaptureCoordinator
     private void OnSessionKindChanged(CaptureKind kind)
     {
         var settings = _settings.Current;
-        settings.CaptureMode = kind == CaptureKind.Gif ? "gif" : "snip";
+        settings.CaptureMode = kind switch
+        {
+            CaptureKind.Gif => "gif",
+            CaptureKind.Redact => "redact",
+            _ => "snip"
+        };
         _settings.Save(settings);
     }
 

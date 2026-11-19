@@ -126,11 +126,14 @@
         </Style>
     </Window.Resources>
     <Grid>
+        <!-- Both layers are paint only; leaving them hit-testable meant a redaction drag that
+             started inside the selected region hit the Image and never reached the window. -->
         <Image x:Name="FrozenImage"
                Stretch="Fill"
+               IsHitTestVisible="False"
                RenderOptions.BitmapScalingMode="LowQuality"
                RenderOptions.EdgeMode="Aliased"/>
-        <Path x:Name="DimPath" Fill="#99000000"/>
+        <Path x:Name="DimPath" Fill="#99000000" IsHitTestVisible="False"/>
         <Canvas x:Name="SelectionCanvas" IsHitTestVisible="False">
             <Rectangle x:Name="SelectionBorder"
                        Stroke="White"

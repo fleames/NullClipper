@@ -113,22 +113,29 @@ public partial class SettingsWindow : Window
 
     private void OnGifMode(object sender, RoutedEventArgs e) => ApplyCaptureMode("gif", save: true);
 
+    private void OnRedactMode(object sender, RoutedEventArgs e) => ApplyCaptureMode("redact", save: true);
+
     private void ApplyCaptureMode(string mode, bool save)
     {
         var gif = string.Equals(mode, "gif", StringComparison.OrdinalIgnoreCase);
-        SnipModeButton.IsChecked = !gif;
+        var redact = string.Equals(mode, "redact", StringComparison.OrdinalIgnoreCase);
+        SnipModeButton.IsChecked = !gif && !redact;
         GifModeButton.IsChecked = gif;
-        CaptureTitle.Text = gif ? "Record GIF" : "Capture";
+        RedactModeButton.IsChecked = redact;
+        CaptureTitle.Text = gif ? "Record GIF" : redact ? "Redact" : "Capture";
         CaptureSubtitle.Text = gif
             ? "Select a region, then Stop or wait 8s"
+            : redact ? "Select a region, then hide what should not be shared"
             : "Region, window, or full screen";
         CaptureModeHint.Text = gif
             ? "GIF records the selected rectangle at 12 fps for up to 8s. Longest side is capped at 640px so files stay small."
-            : "Snip copies a still image. Switch to GIF to record a short clip of the same region.";
+            : redact
+                ? "Pick a region, then drag boxes over anything private. Each box becomes a mosaic before the image is copied — Enter copies, Backspace undoes a box."
+                : "Snip copies a still image. Switch to GIF to record a short clip, or Redact to mosaic what should not be shared.";
         if (save)
         {
             var settings = _store.Current;
-            settings.CaptureMode = gif ? "gif" : "snip";
+            settings.CaptureMode = gif ? "gif" : redact ? "redact" : "snip";
             _store.Save(settings);
         }
     }
