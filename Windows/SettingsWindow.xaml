@@ -412,6 +412,30 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="InlineAction" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#7DA2FF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#A8C4FF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="SectionLabel" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource QuietTextBrush}"/>
             <Setter Property="FontSize" Value="11"/>
@@ -555,6 +579,24 @@
                                    Text="GIF records a region at 12 fps for up to 8s. Longest side capped at 640px."
                                    TextWrapping="Wrap"
                                    Margin="2,8,0,0"/>
+                        <Border Height="1"
+                                Background="{StaticResource HairlineBrush}"
+                                Margin="0,14,0,12"/>
+                        <TextBlock Text="DELAY"
+                                   Style="{StaticResource SectionLabel}"/>
+                        <ComboBox x:Name="DelayBox"
+                                  Margin="0,8,0,0"
+                                  SelectionChanged="OnDelayChanged">
+                            <ComboBoxItem Content="No delay" Tag="0"/>
+                            <ComboBoxItem Content="3 seconds" Tag="3"/>
+                            <ComboBoxItem Content="5 seconds" Tag="5"/>
+                            <ComboBoxItem Content="10 seconds" Tag="10"/>
+                        </ComboBox>
+                        <TextBlock x:Name="DelayHint"
+                                   Style="{StaticResource HintText}"
+                                   Text="Waits before the overlay appears, so menus and hover tooltips stay open."
+                                   TextWrapping="Wrap"
+                                   Margin="2,8,0,0"/>
                     </StackPanel>
                 </Border>
             </Border>
@@ -594,10 +636,39 @@
             </Border>
 
             <Border Style="{StaticResource Card}" Margin="0,12,0,0" Padding="16,14">
-                <CheckBox x:Name="StartupBox"
-                          Style="{StaticResource SwitchRow}"
-                          Content="Start NullClipper with Windows"
-                          Click="OnStartupToggled"/>
+                <StackPanel>
+                    <CheckBox x:Name="StartupBox"
+                              Style="{StaticResource SwitchRow}"
+                              Content="Start NullClipper with Windows"
+                              Click="OnStartupToggled"/>
+                    <Border Height="1"
+                            Background="{StaticResource HairlineBrush}"
+                            Margin="0,12"/>
+                    <CheckBox x:Name="KeepHistoryBox"
+                              Style="{StaticResource SwitchRow}"
+                              Content="Keep a copy of each snip"
+                              Click="OnKeepHistoryToggled"/>
+                    <TextBlock Text="Last 60 captures in %AppData%\Clipper\snips."
+                               Style="{StaticResource HintText}"
+                               TextWrapping="Wrap"
+                               Margin="2,6,0,0"/>
+                    <Border Height="1"
+                            Background="{StaticResource HairlineBrush}"
+                            Margin="0,12"/>
+                    <CheckBox x:Name="CheckUpdatesBox"
+                              Style="{StaticResource SwitchRow}"
+                              Content="Check for updates on launch"
+                              Click="OnCheckUpdatesToggled"/>
+                    <TextBlock Text="Asks api.github.com for the latest release tag. Off by default."
+                               Style="{StaticResource HintText}"
+                               TextWrapping="Wrap"
+                               Margin="2,6,0,0"/>
+                    <Button x:Name="CheckNowButton"
+                            Style="{StaticResource InlineAction}"
+                            Content="Check now"
+                            Click="OnCheckNow"
+                            Margin="0,4,0,0"/>
+                </StackPanel>
             </Border>
 
             <Border Style="{StaticResource Card}" Margin="0,12,0,0">

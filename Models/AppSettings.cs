@@ -26,6 +26,22 @@ public sealed class AppSettings
     /// </summary>
     public string CaptureMode { get; set; } = "snip";
 
+    /// <summary>
+    /// Seconds to wait between the hotkey and the overlay. 0 shows the overlay immediately.
+    /// The point is menus, hover states and tooltips that close the moment you reach for a key.
+    /// </summary>
+    public int CaptureDelaySeconds { get; set; }
+
+    /// <summary>Keep a local copy of every capture under %AppData%\Clipper\snips.</summary>
+    public bool KeepHistory { get; set; } = true;
+
+    /// <summary>
+    /// Ask api.github.com for the latest release tag on launch. Off by default: the app
+    /// otherwise makes exactly one kind of network request (the optional NullImage upload),
+    /// and the privacy copy says so.
+    /// </summary>
+    public bool CheckForUpdates { get; set; }
+
     public bool IsGifMode => string.Equals(CaptureMode, "gif", StringComparison.OrdinalIgnoreCase);
 
     public HotkeyBinding Hotkey => new(HotkeyModifiers, HotkeyVirtualKey);
@@ -56,6 +72,11 @@ public sealed class AppSettings
         if (!IsGifMode)
         {
             CaptureMode = "snip";
+        }
+
+        if (CaptureDelaySeconds is not (0 or 3 or 5 or 10))
+        {
+            CaptureDelaySeconds = 0;
         }
 
         if (string.Equals(NullImageExpiry, "never", StringComparison.OrdinalIgnoreCase)

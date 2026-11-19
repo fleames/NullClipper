@@ -54,11 +54,15 @@ If you want to send the snip instead of pasting it, turn on **NullImage**. The u
 
 - **Clipboard snips** — region, freeform, window, or the whole screen. PNG lands on the clipboard.
 - **GIF capture** — record a region at 12 fps for up to 8 seconds. Longest side is capped at 640px so files stay small.
+- **Redact mode** — pick a region, then drag boxes over anything private. Each box becomes a mosaic (not a blur — a blur can be inverted), and only then does it reach the clipboard. `Enter` copies, `Backspace` undoes a box.
+- **Delayed capture** — 3, 5, or 10 seconds between the hotkey and the overlay, so menus, hover states and tooltips are still open when the screen freezes.
+- **Recent snips** — every capture is kept in `%AppData%\Clipper\snips` (last 60) and the tray menu can put any of them back on the clipboard. Off with one checkbox.
 - **Click-to-record hotkey** — open Settings, click the hotkey field, press the keys you want. Default is `Ctrl + Shift + X`.
 - **Tray app** — left-click the icon to capture, right-click for Settings / Exit. Settings hides to the tray (minimize, no title-bar close). Single-instance; a second launch just starts another snip.
 - **Multi-monitor** — overlay on every display, freeze-frame so nothing moves while you drag.
 - **Start with Windows** — optional Run-key registration.
 - **NullImage (optional)** — encrypted share link instead of an image. Off unless you check the box.
+- **Update check (optional)** — off by default. When on, it asks `api.github.com` for the latest release tag once at launch and says nothing else.
 
 ## Install
 
@@ -90,8 +94,10 @@ Details: [`extension/README.md`](extension/README.md).
 | Action | What happens |
 | --- | --- |
 | `Ctrl + Shift + X` (or your hotkey) | Overlay appears over a frozen screenshot |
-| Snip / GIF on the toolbar | Still image, or a short recording of the region |
+| Snip / GIF / Redact on the toolbar | Still image, a short recording, or a still you mosaic first |
 | Drag | Rectangular (or freeform) selection |
+| `Enter` in redact mode | Copy the mosaic'd snip |
+| `Backspace` in redact mode | Undo the last box |
 | Click a window in window mode | Snips that window’s bounds |
 | Fullscreen button | Whole monitor |
 | `Esc` / right-click | Cancel |
@@ -103,10 +109,13 @@ After a snip, a toast confirms **Snip saved to clipboard** (or that a NullImage 
 
 Right-click the tray icon → **Settings**. Minimize hides the window back to the tray.
 
-- **Snip \| GIF** — still image, or record a short clip of the same region.
+- **Snip \| GIF \| Redact** — still image, a short recording, or a still with mosaic boxes.
 - **Capture / Record GIF** — fire a capture without the hotkey.
 - **Hotkey** — click, then press a shortcut. Esc leaves the old one.
+- **Delay** — none, 3, 5, or 10 seconds before the overlay appears.
 - **Start NullClipper with Windows** — logon launch.
+- **Keep a copy of each snip** — the last 60 captures stay in `%AppData%\Clipper\snips`; the tray menu lists them.
+- **Check for updates on launch** — off by default; asks `api.github.com` for the latest release tag.
 - **Quit NullClipper** — leaves the tray.
 
 ## NullImage

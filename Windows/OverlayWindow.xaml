@@ -27,6 +27,7 @@
             <Setter Property="FontFamily" Value="{StaticResource IconFont}"/>
             <Setter Property="FontSize" Value="15"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -66,6 +67,7 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -147,6 +149,7 @@
                       StrokeStartLineCap="Round"
                       StrokeEndLineCap="Round"
                       Visibility="Collapsed"/>
+            <Canvas x:Name="RedactCanvas" IsHitTestVisible="False"/>
         </Canvas>
         <Border x:Name="SizeBadge"
                 Background="{StaticResource OverlayChromeBrush}"
@@ -194,6 +197,11 @@
                                 Content="GIF"
                                 ToolTip="Record a short GIF of the region"
                                 Click="OnGifKind"/>
+                        <Button x:Name="RedactKindButton"
+                                Style="{StaticResource KindButton}"
+                                Content="Redact"
+                                ToolTip="Snip, then mosaic what should not be shared"
+                                Click="OnRedactKind"/>
                     </StackPanel>
                 </Border>
                 <Rectangle Width="1"

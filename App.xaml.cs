@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using Clipper.Models;
 using Clipper.Services;
@@ -47,6 +49,10 @@ public partial class App : System.Windows.Application
         _tray.CaptureRequested += () => Dispatcher.BeginInvoke(() => _capture.Start());
         _tray.SettingsRequested += () => Dispatcher.BeginInvoke(OpenSettings);
         _tray.ExitRequested += () => Dispatcher.BeginInvoke(() => Shutdown());
+        _tray.CurrentDelaySeconds = () => _settings?.Current.CaptureDelaySeconds ?? 0;
+        _tray.DelaySelected += seconds => Dispatcher.BeginInvoke(() => SetCaptureDelay(seconds));
+        _tray.RecentSnipRequested += path => Dispatcher.BeginInvoke(() => CopyRecentSnip(path));
+        _tray.UpdateClicked += OpenReleasesPage;
 
         ApplyHotkey(showError: true);
 
@@ -54,6 +60,11 @@ public partial class App : System.Windows.Application
         _ = ListenForSecondInstanceAsync(_signalLoop.Token);
 
         _tray.ShowWelcome(_settings.Current.Hotkey.Label);
+
+        if (_settings.Current.CheckForUpdates)
+        {
+            _ = CheckForUpdateAsync(interactive: false);
+        }
 
         if (e.Args.Any(a => string.Equals(a, "--settings", StringComparison.OrdinalIgnoreCase)))
         {
@@ -173,9 +184,80 @@ public partial class App : System.Windows.Application
             () => _capture.Start(),
             () => ApplyHotkey(),
             () => _hotkeys.Pause(),
-            Shutdown);
+            Shutdown,
+            () => _ = CheckForUpdateAsync(interactive: true));
         _settingsWindow.Closed += (_, _) => _settingsWindow = null;
         _settingsWindow.Show();
+    }
+
+    private void SetCaptureDelay(int seconds)
+    {
+        if (_settings is null)
+        {
+            return;
+        }
+
+        var settings = _settings.Current;
+        settings.CaptureDelaySeconds = seconds;
+        _settings.Save(settings);
+    }
+
+    private void CopyRecentSnip(string path)
+    {
+        try
+        {
+            if (path.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+            {
+                var bytes = File.ReadAllBytes(path);
+                using var frame = new System.Drawing.Bitmap(path);
+                ClipboardService.CopyGif(bytes, frame);
+                ToastWindow.Show(
+                    "GIF copied to clipboard",
+                    Path.GetFileName(path),
+                    ClipboardService.Preview(frame),
+                    gif: true);
+                return;
+            }
+
+            using var image = new System.Drawing.Bitmap(path);
+            ClipboardService.CopyImage(image);
+            ToastWindow.Show("Copied to clipboard", Path.GetFileName(path), ClipboardService.Preview(image));
+        }
+        catch (Exception ex)
+        {
+            ToastWindow.Show("Could not copy that snip", ex.Message);
+        }
+    }
+
+    private async Task CheckForUpdateAsync(bool interactive)
+    {
+        var tag = await UpdateService.GetNewerTagAsync();
+        if (tag is not null)
+        {
+            _tray?.ShowUpdateAvailable(tag);
+            return;
+        }
+
+        if (interactive)
+        {
+            _tray?.ShowMessage("NullClipper", $"You're up to date ({UpdateService.CurrentVersion}).");
+        }
+    }
+
+    private static void OpenReleasesPage()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = UpdateService.ReleasesPageUrl,
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+            // No browser to open.
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)

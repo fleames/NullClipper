@@ -16,6 +16,7 @@ public partial class SettingsWindow : Window
     private readonly Action _applyHotkey;
     private readonly Action _pauseHotkey;
     private readonly Action _quit;
+    private readonly Action _checkNow;
     private bool _recording;
 
     public SettingsWindow(
@@ -23,7 +24,8 @@ public partial class SettingsWindow : Window
         Action capture,
         Action applyHotkey,
         Action pauseHotkey,
-        Action quit)
+        Action quit,
+        Action checkNow)
     {
         InitializeComponent();
         _store = store;
@@ -31,10 +33,14 @@ public partial class SettingsWindow : Window
         _applyHotkey = applyHotkey;
         _pauseHotkey = pauseHotkey;
         _quit = quit;
+        _checkNow = checkNow;
 
         ShowHotkey(store.Current.Hotkey.Label);
         ApplyCaptureMode(store.Current.CaptureMode, save: false);
+        SelectDelay(store.Current.CaptureDelaySeconds);
         StartupBox.IsChecked = store.Current.StartWithWindows;
+        KeepHistoryBox.IsChecked = store.Current.KeepHistory;
+        CheckUpdatesBox.IsChecked = store.Current.CheckForUpdates;
 
         NullImageEnabledBox.IsChecked = store.Current.NullImageEnabled;
         SelectExpiry(store.Current.NullImageExpiry);
@@ -286,6 +292,53 @@ public partial class SettingsWindow : Window
     {
         _quit();
     }
+
+    private void SelectDelay(int seconds)
+    {
+        foreach (var obj in DelayBox.Items)
+        {
+            if (obj is ComboBoxItem item && item.Tag is string tag && tag == seconds.ToString())
+            {
+                DelayBox.SelectedItem = item;
+                return;
+            }
+        }
+
+        DelayBox.SelectedIndex = 0;
+    }
+
+    private void OnDelayChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DelayBox.SelectedItem is not ComboBoxItem item || item.Tag is not string tag)
+        {
+            return;
+        }
+
+        if (!int.TryParse(tag, out var seconds))
+        {
+            return;
+        }
+
+        var settings = _store.Current;
+        settings.CaptureDelaySeconds = seconds;
+        _store.Save(settings);
+    }
+
+    private void OnKeepHistoryToggled(object sender, RoutedEventArgs e)
+    {
+        var settings = _store.Current;
+        settings.KeepHistory = KeepHistoryBox.IsChecked == true;
+        _store.Save(settings);
+    }
+
+    private void OnCheckUpdatesToggled(object sender, RoutedEventArgs e)
+    {
+        var settings = _store.Current;
+        settings.CheckForUpdates = CheckUpdatesBox.IsChecked == true;
+        _store.Save(settings);
+    }
+
+    private void OnCheckNow(object sender, RoutedEventArgs e) => _checkNow();
 
     private void SelectExpiry(string value)
     {

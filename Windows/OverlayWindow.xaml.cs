@@ -23,6 +23,12 @@ public partial class OverlayWindow : Window
     private bool _closed;
     private bool _released;
 
+    // Redaction: one region, then any number of mosaic boxes over it.
+    private bool _redacting;
+    private Rect _redactRegion;
+    private readonly List<Rect> _redactBoxes = [];
+    private Rect? _pendingRedactBox;
+
     public event Action<Drawing.Rectangle>? RectCaptured;
     public event Action<Drawing.Bitmap>? ImageCaptured;
     public event Action? Cancelled;
@@ -43,7 +49,10 @@ public partial class OverlayWindow : Window
         SourceInitialized += OnSourceInitialized;
         Loaded += OnLoaded;
         Closed += OnClosed;
-        KeyDown += OnKeyDown;
+        // PreviewKeyDown, not KeyDown: the toolbar buttons keep the keyboard focus after a
+        // click, and Enter on a focused Button is a click. Tunnelling from the window catches
+        // Enter/Backspace/Esc before any button sees them.
+        PreviewKeyDown += OnKeyDown;
         MouseEnter += (_, _) => Activate();
         MouseLeftButtonDown += OnMouseLeftButtonDown;
         MouseMove += OnMouseMove;
@@ -93,6 +102,7 @@ public partial class OverlayWindow : Window
 
     private void OnKindChanged(CaptureKind _)
     {
+        ResetRedaction();
         ResetSelection();
         UpdateKindButtons();
         UpdateModeButtons();
@@ -103,6 +113,8 @@ public partial class OverlayWindow : Window
     private void OnSnipKind(object sender, RoutedEventArgs e) => _session.SetKind(CaptureKind.Snip);
 
     private void OnGifKind(object sender, RoutedEventArgs e) => _session.SetKind(CaptureKind.Gif);
+
+    private void OnRedactKind(object sender, RoutedEventArgs e) => _session.SetKind(CaptureKind.Redact);
 
     private void OnRectangleMode(object sender, RoutedEventArgs e) => _session.SetMode(SnipMode.Rectangle);
 
@@ -118,12 +130,41 @@ public partial class OverlayWindow : Window
 
     private void OnWindowMode(object sender, RoutedEventArgs e) => _session.SetMode(SnipMode.Window);
 
-    private void OnFullScreen(object sender, RoutedEventArgs e) => CompleteRect(ScreenBounds);
+    private void OnFullScreen(object sender, RoutedEventArgs e)
+    {
+        if (_session.Kind == CaptureKind.Redact)
+        {
+            BeginRedaction(new Rect(0, 0, ActualWidth, ActualHeight));
+            return;
+        }
+
+        CompleteRect(ScreenBounds);
+    }
 
     private void OnCloseClicked(object sender, RoutedEventArgs e) => RequestCancel();
 
     private void OnKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
+        if (_redacting)
+        {
+            switch (e.Key)
+            {
+                case Key.Enter:
+                    ApplyRedactionsAndComplete();
+                    e.Handled = true;
+                    return;
+                case Key.Back:
+                    if (_redactBoxes.Count > 0)
+                    {
+                        _redactBoxes.RemoveAt(_redactBoxes.Count - 1);
+                        Redraw();
+                    }
+
+                    e.Handled = true;
+                    return;
+            }
+        }
+
         if (e.Key == Key.Escape)
         {
             RequestCancel();
@@ -135,6 +176,16 @@ public partial class OverlayWindow : Window
     {
         if (Toolbar.IsMouseOver)
         {
+            return;
+        }
+
+        if (_redacting)
+        {
+            _selecting = true;
+            _start = e.GetPosition(this);
+            _pendingRedactBox = new Rect(_start, new System.Windows.Size(0, 0));
+            CaptureMouse();
+            Redraw();
             return;
         }
 
@@ -159,6 +210,18 @@ public partial class OverlayWindow : Window
 
     private void OnMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
     {
+        if (_redacting)
+        {
+            if (!_selecting)
+            {
+                return;
+            }
+
+            _pendingRedactBox = new Rect(_start, e.GetPosition(this));
+            Redraw();
+            return;
+        }
+
         if (_session.Mode == SnipMode.Window)
         {
             UpdateWindowHover();
@@ -200,6 +263,12 @@ public partial class OverlayWindow : Window
             ReleaseMouseCapture();
         }
 
+        if (_redacting)
+        {
+            CommitRedactBox();
+            return;
+        }
+
         if (_session.Mode == SnipMode.Freeform)
         {
             CompleteFreeform();
@@ -213,7 +282,136 @@ public partial class OverlayWindow : Window
             return;
         }
 
+        if (_session.Kind == CaptureKind.Redact)
+        {
+            BeginRedaction(_selection);
+            return;
+        }
+
         CompleteRect(ToVirtualRect(_selection));
+    }
+
+    private void BeginRedaction(Rect region)
+    {
+        _redactRegion = region;
+        _redactBoxes.Clear();
+        _pendingRedactBox = null;
+        _selecting = false;
+        _redacting = true;
+        Cursor = Cursors.Cross;
+        Redraw();
+    }
+
+    private void CommitRedactBox()
+    {
+        if (_pendingRedactBox is { } box)
+        {
+            // Keep the mosaic inside the region the user picked first.
+            var clipped = Rect.Intersect(box, _redactRegion);
+            if (clipped.Width >= 4 && clipped.Height >= 4)
+            {
+                _redactBoxes.Add(clipped);
+            }
+        }
+
+        _pendingRedactBox = null;
+        Redraw();
+    }
+
+    private void ResetRedaction()
+    {
+        _redacting = false;
+        _redactBoxes.Clear();
+        _pendingRedactBox = null;
+        if (RedactCanvas is not null)
+        {
+            RedactCanvas.Children.Clear();
+            RedactCanvas.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void ApplyRedactionsAndComplete()
+    {
+        if (_closed)
+        {
+            return;
+        }
+
+        var pixels = ToPixelRect(_redactRegion);
+        var crop = ScreenCaptureService.Crop(_freeze, pixels);
+
+        if (_redactBoxes.Count > 0)
+        {
+            var scaleX = crop.Width / Math.Max(1.0, _redactRegion.Width);
+            var scaleY = crop.Height / Math.Max(1.0, _redactRegion.Height);
+            var areas = _redactBoxes.Select(box => new Drawing.Rectangle(
+                (int)Math.Round((box.X - _redactRegion.X) * scaleX),
+                (int)Math.Round((box.Y - _redactRegion.Y) * scaleY),
+                (int)Math.Round(box.Width * scaleX),
+                (int)Math.Round(box.Height * scaleY))).ToArray();
+
+            ImageRedaction.Pixelate(crop, areas);
+        }
+
+        _closed = true;
+        ImageCaptured?.Invoke(crop);
+    }
+
+    private void DrawRedaction()
+    {
+        WindowHighlight.Visibility = Visibility.Collapsed;
+        FreeformLine.Visibility = Visibility.Collapsed;
+
+        Canvas.SetLeft(SelectionBorder, _redactRegion.X);
+        Canvas.SetTop(SelectionBorder, _redactRegion.Y);
+        SelectionBorder.Width = Math.Max(0, _redactRegion.Width);
+        SelectionBorder.Height = Math.Max(0, _redactRegion.Height);
+        SelectionBorder.Visibility = Visibility.Visible;
+
+        RedactCanvas.Visibility = Visibility.Visible;
+        RedactCanvas.Children.Clear();
+        foreach (var box in _redactBoxes)
+        {
+            AddRedactVisual(box);
+        }
+
+        if (_pendingRedactBox is { } pending)
+        {
+            AddRedactVisual(pending);
+        }
+
+        SizeText.Text = _redactBoxes.Count == 0
+            ? "Drag over anything private · Esc cancels"
+            : "Enter to copy · Backspace to undo";
+        SizeBadge.Visibility = Visibility.Visible;
+        var badgeX = Math.Clamp(_redactRegion.X, 8, Math.Max(8, ActualWidth - 300));
+        var badgeY = _redactRegion.Y + _redactRegion.Height + 8;
+        if (badgeY + 32 > ActualHeight)
+        {
+            badgeY = Math.Max(8, _redactRegion.Y - 32);
+        }
+
+        SizeBadge.Margin = new Thickness(badgeX, badgeY, 0, 0);
+
+        var full = new RectangleGeometry(new Rect(0, 0, ActualWidth, ActualHeight));
+        DimPath.Data = new CombinedGeometry(GeometryCombineMode.Exclude, full, new RectangleGeometry(_redactRegion));
+    }
+
+    private void AddRedactVisual(Rect box)
+    {
+        var shape = new System.Windows.Shapes.Rectangle
+        {
+            Width = Math.Max(0, box.Width),
+            Height = Math.Max(0, box.Height),
+            Fill = new SolidColorBrush(Color.FromArgb(0x66, 0xEF, 0x44, 0x44)),
+            Stroke = new SolidColorBrush(Color.FromArgb(0xFF, 0xEF, 0x44, 0x44)),
+            StrokeThickness = 1,
+            SnapsToDevicePixels = true
+        };
+
+        Canvas.SetLeft(shape, box.X);
+        Canvas.SetTop(shape, box.Y);
+        RedactCanvas.Children.Add(shape);
     }
 
     private void UpdateWindowHover()
@@ -355,13 +553,14 @@ public partial class OverlayWindow : Window
     {
         Highlight(SnipKindButton, _session.Kind == CaptureKind.Snip);
         Highlight(GifKindButton, _session.Kind == CaptureKind.Gif);
+        Highlight(RedactKindButton, _session.Kind == CaptureKind.Redact);
     }
 
     private void UpdateModeButtons()
     {
         Highlight(RectangleButton, _session.Mode == SnipMode.Rectangle);
         Highlight(FreeformButton, _session.Mode == SnipMode.Freeform);
-        var freeform = _session.Kind != CaptureKind.Gif;
+        var freeform = _session.Kind == CaptureKind.Snip;
         FreeformButton.IsEnabled = freeform;
         FreeformButton.Opacity = freeform ? 1 : 0.35;
         Highlight(WindowButton, _session.Mode == SnipMode.Window);
@@ -374,10 +573,18 @@ public partial class OverlayWindow : Window
 
     private void Redraw()
     {
+        if (_redacting)
+        {
+            DrawRedaction();
+            return;
+        }
+
         SelectionBorder.Visibility = Visibility.Collapsed;
         WindowHighlight.Visibility = Visibility.Collapsed;
         FreeformLine.Visibility = Visibility.Collapsed;
         SizeBadge.Visibility = Visibility.Collapsed;
+        RedactCanvas.Visibility = Visibility.Collapsed;
+        RedactCanvas.Children.Clear();
 
         var hole = (Geometry?)null;
 

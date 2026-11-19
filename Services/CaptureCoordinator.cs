@@ -13,6 +13,7 @@ public sealed class CaptureCoordinator
     private readonly List<OverlayWindow> _overlays = [];
     private CaptureSession? _session;
     private bool _busy;
+    private CancellationTokenSource? _delayCts;
 
     public CaptureCoordinator(SettingsStore settings)
     {
@@ -27,6 +28,73 @@ public sealed class CaptureCoordinator
         }
 
         _busy = true;
+        var delay = _settings.Current.CaptureDelaySeconds;
+        if (delay > 0)
+        {
+            _delayCts = new CancellationTokenSource();
+            _ = RunDelayThenCaptureAsync(delay, _delayCts);
+            return;
+        }
+
+        BeginCapture();
+    }
+
+    /// <summary>
+    /// Counts down, then shows the overlay. The countdown window takes focus so Esc
+    /// cancels, and it is placed beside the cursor rather than on top of the menu or
+    /// tooltip the user is waiting to catch.
+    /// </summary>
+    private async Task RunDelayThenCaptureAsync(int seconds, CancellationTokenSource cts)
+    {
+        var token = cts.Token;
+        DelayWindow? hud = null;
+        try
+        {
+            hud = new DelayWindow(seconds);
+            hud.Cancelled += cts.Cancel;
+            hud.Show();
+            hud.Activate();
+
+            for (var remaining = seconds; remaining > 0; remaining--)
+            {
+                hud.SetRemaining(remaining);
+                await Task.Delay(TimeSpan.FromSeconds(1), token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Esc, a second hotkey press, or the tray toggle.
+        }
+        catch
+        {
+            // The countdown is cosmetic — capture anyway if it could not be shown.
+        }
+        finally
+        {
+            try
+            {
+                hud?.Close();
+            }
+            catch
+            {
+                // Already closed.
+            }
+
+            _delayCts = null;
+            cts.Dispose();
+        }
+
+        if (token.IsCancellationRequested)
+        {
+            _busy = false;
+            return;
+        }
+
+        BeginCapture();
+    }
+
+    private void BeginCapture()
+    {
         var completed = false;
         _session = new CaptureSession();
         _session.SetKind(_settings.Current.IsGifMode ? CaptureKind.Gif : CaptureKind.Snip);
@@ -146,6 +214,8 @@ public sealed class CaptureCoordinator
 
     public void Cancel()
     {
+        _delayCts?.Cancel();
+
         if (!_busy)
         {
             return;
@@ -278,6 +348,11 @@ public sealed class CaptureCoordinator
             {
                 CopyToClipboardAndNotify(capture);
             }
+
+            if (settings.KeepHistory)
+            {
+                SnipHistoryService.SaveImage(capture);
+            }
         }
         finally
         {
@@ -290,6 +365,11 @@ public sealed class CaptureCoordinator
     {
         try
         {
+            if (_settings.Current.KeepHistory)
+            {
+                SnipHistoryService.SaveGif(result.Bytes);
+            }
+
             var settings = _settings.Current;
             var preview = ClipboardService.Preview(result.Preview);
             if (settings.NullImageEnabled)

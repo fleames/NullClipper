@@ -12,7 +12,10 @@ public enum SnipMode
 public enum CaptureKind
 {
     Snip,
-    Gif
+    Gif,
+
+    /// <summary>Snip, then mosaic boxes before it reaches the clipboard.</summary>
+    Redact
 }
 
 public sealed class CaptureSession
@@ -48,7 +51,7 @@ public sealed class CaptureSession
         }
 
         Kind = kind;
-        if (kind == CaptureKind.Gif && Mode == SnipMode.Freeform)
+        if (kind != CaptureKind.Snip && Mode == SnipMode.Freeform)
         {
             SetMode(SnipMode.Rectangle);
         }
